@@ -1,0 +1,11 @@
+[package]
+name = "awsome"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aws-smithy-runtime-api = { version = "1.7.0", features = ["client"] }
+clap = { version = "4.5.7", features = ["derive"] }
+iced = "0.12.1"
+serde = { version = "1.0.203", features = ["derive"] }
+serde_yaml = "0.9.34"
