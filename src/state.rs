@@ -2,6 +2,7 @@ use crate::{error::Error, pane_type::PaneType, workspace::Workspace};
 
 #[derive(Clone, Debug)]
 pub struct State {
+    nearest_region: String,
     side_drawer_open: bool,
     side_drawer_width: f32,
     active_pane: PaneType,
@@ -10,6 +11,7 @@ pub struct State {
 impl State {
     pub fn new() -> Self {
         Self {
+            nearest_region: String::from("ap-northeast-1"), // TODO: get from config
             side_drawer_open: false,
             side_drawer_width: 150.0,
             active_pane: PaneType::Explore,
@@ -18,10 +20,15 @@ impl State {
 
     pub fn from_workspace(_ws: Workspace) -> Result<Self, Error> {
         Ok(Self {
+            nearest_region: String::from("ap-northeast-1"), // TODO: get from config
             side_drawer_open: false,
             side_drawer_width: 150.0,
             active_pane: PaneType::Explore,
         })
+    }
+
+    pub fn get_nearest_region(&self) -> &str {
+        &self.nearest_region
     }
 
     pub fn is_side_drawer_open(&self) -> bool {

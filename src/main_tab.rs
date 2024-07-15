@@ -3,13 +3,17 @@ use iced::{
     Color, Element,
 };
 
-use crate::{bootstrap_text::bootstrap_text, message::Message, pane_type::PaneType, state::State};
+use crate::{bootstrap_text::bootstrap_text, explore_tab::ExploreTab, message::Message, pane_type::PaneType, state::State};
 
-pub struct MainTab {}
+pub struct MainTab {
+    pub explore_tab: ExploreTab,
+}
 
 impl MainTab {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            explore_tab: ExploreTab::new(),
+        }
     }
 
     pub fn view(&self, state: &State) -> Element<Message> {
@@ -125,16 +129,9 @@ impl MainTab {
 
     fn render_main_tab_pane(&self, state: &State) -> Element<Message> {
         match state.get_active_pane() {
-            PaneType::Explore => self.render_explore_tab(),
+            PaneType::Explore => self.explore_tab.view(),
             PaneType::Projects => self.render_projects_tab(),
         }
-    }
-
-    fn render_explore_tab(&self) -> Element<Message> {
-        text("Explore Tab")
-            .width(iced::Length::Fill)
-            .height(iced::Length::Fill)
-            .into()
     }
 
     fn render_projects_tab(&self) -> Element<Message> {

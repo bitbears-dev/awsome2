@@ -7,4 +7,8 @@ pub enum Message {
     SideDrawerToggled,
     ActivateExploreTab,
     ActivateProjectsTab,
+
+    ProfileSelected(String),
+    RegionsLoaded(Vec<String>),
+    RegionSelected(String),
 }

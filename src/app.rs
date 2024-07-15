@@ -6,7 +6,7 @@ use iced::{
     Application, Command,
 };
 
-use crate::{main_tab::MainTab, message::Message, pane_type::PaneType, state::State, workspace};
+use crate::{main_tab::MainTab, message::Message, pane_type::PaneType, regions::load_regions, state::State, workspace};
 
 #[derive(Default, Parser)]
 pub struct AppFlags {
@@ -104,6 +104,27 @@ impl Application for AwsomeApp {
                     state.set_active_pane(PaneType::Projects);
                     state.close_side_drawer();
                 }
+                iced::Command::none()
+            },
+            Message::ProfileSelected(profile) => {
+                self.main_tab.explore_tab.set_selected_profile(profile.clone());
+                let nearest_region = self.state.as_ref().map(|s| s.get_nearest_region().to_string()).unwrap_or("us-east-1".to_string());
+                iced::Command::perform(load_regions(profile.clone(), nearest_region), |res| {
+                    match res {
+                        Ok(regions) => Message::RegionsLoaded(regions),
+                        Err(e) => {
+                            eprintln!("Error: {:?}", e);
+                            Message::RegionsLoaded(vec![])
+                        }
+                    }
+                })
+            },
+            Message::RegionsLoaded(regions) => {
+                self.main_tab.explore_tab.set_regions(regions);
+                iced::Command::none()
+            },
+            Message::RegionSelected(region) => {
+                self.main_tab.explore_tab.set_selected_region(region);
                 iced::Command::none()
             }
         }

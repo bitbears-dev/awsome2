@@ -4,7 +4,7 @@ build: fmt test lint
 
 .PHONY: run
 run: fmt test lint
-	cargo run
+	RUST_BACKTRACE=1 cargo run
 
 .PHONY: fmt
 fmt:

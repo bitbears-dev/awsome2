@@ -3,7 +3,7 @@ use std::convert::From;
 #[derive(Clone, Debug)]
 pub enum Error {
     UnknownError,
-    //UnableToLoadAwsConfig,
+    UnableToLoadAwsConfig,
 }
 
 impl std::fmt::Display for Error {
