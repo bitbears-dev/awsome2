@@ -1,4 +1,4 @@
-use crate::{error::Error, state::State};
+use crate::{error::Error, resource::Resource, service::Service, state::State};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -11,4 +11,7 @@ pub enum Message {
     ProfileSelected(String),
     RegionsLoaded(Vec<String>),
     RegionSelected(String),
+    ServiceSelected(usize, &'static Service),
+    ResourcesLoaded(Vec<Resource>),
+    ResourceSelected(usize, Resource),
 }

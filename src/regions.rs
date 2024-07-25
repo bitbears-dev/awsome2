@@ -11,7 +11,7 @@ pub async fn load_regions(profile: String, nearest_region: String) -> Result<Vec
         .await;
     let client = aws_sdk_ec2::Client::new(&config);
     let out = client.describe_regions().send().await?;
-    let regions = out
+    let mut regions = out
         .regions
         .map(|regions| {
         regions
@@ -26,6 +26,8 @@ pub async fn load_regions(profile: String, nearest_region: String) -> Result<Vec
         eprintln!("Regions was None");
         vec![]
     });
+
+    regions.sort();
 
     Ok(regions)
 }

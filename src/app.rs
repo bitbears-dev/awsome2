@@ -6,7 +6,7 @@ use iced::{
     Application, Command,
 };
 
-use crate::{main_tab::MainTab, message::Message, pane_type::PaneType, regions::load_regions, state::State, workspace};
+use crate::{main_tab::MainTab, message::Message, pane_type::PaneType, regions::load_regions, resource::load_resources, state::State, workspace};
 
 #[derive(Default, Parser)]
 pub struct AppFlags {
@@ -126,7 +126,36 @@ impl Application for AwsomeApp {
             Message::RegionSelected(region) => {
                 self.main_tab.explore_tab.set_selected_region(region);
                 iced::Command::none()
-            }
+            },
+            Message::ServiceSelected(_index, service) => {
+                self.main_tab.explore_tab.set_selected_service(service);
+                self.main_tab.explore_tab.set_resources(vec![]);
+
+                let Some(profile) = self.main_tab.explore_tab.get_selected_profile() else {
+                    return iced::Command::none();
+                };
+                let Some(region) = self.main_tab.explore_tab.get_selected_region() else {
+                    return iced::Command::none();
+                };
+
+                iced::Command::perform(load_resources(profile, region, service), |res| {
+                    match res {
+                        Ok(resources) => Message::ResourcesLoaded(resources),
+                        Err(e) => {
+                            eprintln!("Error: {:?}", e);
+                            Message::ResourcesLoaded(vec![])
+                        }
+                    }
+                })
+            },
+            Message::ResourcesLoaded(resources) => {
+                self.main_tab.explore_tab.set_resources(resources);
+                iced::Command::none()
+            },
+            Message::ResourceSelected(_index, resource) => {
+                self.main_tab.explore_tab.set_selected_resource(resource);
+                iced::Command::none()
+            },
         }
     }
 

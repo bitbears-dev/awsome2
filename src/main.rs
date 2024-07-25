@@ -2,11 +2,14 @@ mod app;
 mod bootstrap_text;
 mod error;
 mod explore_tab;
+mod fonts;
 mod main_tab;
 mod message;
 mod pane_type;
 mod profiles;
 mod regions;
+mod resource;
+mod service;
 mod state;
 mod workspace;
 
