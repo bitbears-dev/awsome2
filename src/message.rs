@@ -14,4 +14,14 @@ pub enum Message {
     ServiceSelected(usize, &'static Service),
     ResourcesLoaded(Vec<Resource>),
     ResourceSelected(usize, Resource),
+
+    Splitter1Event(crate::splitter::Event),
+    Splitter1Moved(f32),
+
+    Splitter2Event(crate::splitter::Event),
+    Splitter2Moved(f32),
+
+    DoNothing,
+    #[allow(dead_code)]
+    DoNothingOnToggle(bool),
 }

@@ -3,7 +3,10 @@ use iced::{
     Color, Element,
 };
 
-use crate::{bootstrap_text::bootstrap_text, explore_tab::ExploreTab, message::Message, pane_type::PaneType, state::State};
+use crate::{
+    bootstrap_text::bootstrap_text, explore_tab::ExploreTab, message::Message, pane_type::PaneType,
+    state::State,
+};
 
 pub struct MainTab {
     pub explore_tab: ExploreTab,

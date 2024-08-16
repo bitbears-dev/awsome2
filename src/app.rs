@@ -6,7 +6,10 @@ use iced::{
     Application, Command,
 };
 
-use crate::{main_tab::MainTab, message::Message, pane_type::PaneType, regions::load_regions, resource::load_resources, state::State, workspace};
+use crate::{
+    main_tab::MainTab, message::Message, pane_type::PaneType, regions::load_regions,
+    resource::load_resources, state::State, workspace,
+};
 
 #[derive(Default, Parser)]
 pub struct AppFlags {
@@ -105,10 +108,16 @@ impl Application for AwsomeApp {
                     state.close_side_drawer();
                 }
                 iced::Command::none()
-            },
+            }
             Message::ProfileSelected(profile) => {
-                self.main_tab.explore_tab.set_selected_profile(profile.clone());
-                let nearest_region = self.state.as_ref().map(|s| s.get_nearest_region().to_string()).unwrap_or("us-east-1".to_string());
+                self.main_tab
+                    .explore_tab
+                    .set_selected_profile(profile.clone());
+                let nearest_region = self
+                    .state
+                    .as_ref()
+                    .map(|s| s.get_nearest_region().to_string())
+                    .unwrap_or("us-east-1".to_string());
                 iced::Command::perform(load_regions(profile.clone(), nearest_region), |res| {
                     match res {
                         Ok(regions) => Message::RegionsLoaded(regions),
@@ -118,15 +127,15 @@ impl Application for AwsomeApp {
                         }
                     }
                 })
-            },
+            }
             Message::RegionsLoaded(regions) => {
                 self.main_tab.explore_tab.set_regions(regions);
                 iced::Command::none()
-            },
+            }
             Message::RegionSelected(region) => {
                 self.main_tab.explore_tab.set_selected_region(region);
                 iced::Command::none()
-            },
+            }
             Message::ServiceSelected(_index, service) => {
                 self.main_tab.explore_tab.set_selected_service(service);
                 self.main_tab.explore_tab.set_resources(vec![]);
@@ -138,24 +147,48 @@ impl Application for AwsomeApp {
                     return iced::Command::none();
                 };
 
-                iced::Command::perform(load_resources(profile, region, service), |res| {
-                    match res {
-                        Ok(resources) => Message::ResourcesLoaded(resources),
-                        Err(e) => {
-                            eprintln!("Error: {:?}", e);
-                            Message::ResourcesLoaded(vec![])
-                        }
+                self.main_tab.explore_tab.set_loading_resources(true);
+                iced::Command::perform(load_resources(profile, region, service), |res| match res {
+                    Ok(resources) => Message::ResourcesLoaded(resources),
+                    Err(e) => {
+                        eprintln!("Error: {:?}", e);
+                        Message::ResourcesLoaded(vec![])
                     }
                 })
-            },
+            }
             Message::ResourcesLoaded(resources) => {
+                self.main_tab.explore_tab.set_loading_resources(false);
                 self.main_tab.explore_tab.set_resources(resources);
                 iced::Command::none()
-            },
+            }
             Message::ResourceSelected(_index, resource) => {
                 self.main_tab.explore_tab.set_selected_resource(resource);
                 iced::Command::none()
-            },
+            }
+            Message::Splitter1Event(event) => {
+                let msg = self.main_tab.explore_tab.splitter1.update(event);
+                if let Some(msg) = msg {
+                    return self.update(msg);
+                }
+                iced::Command::none()
+            }
+            Message::Splitter1Moved(pos) => {
+                self.main_tab.explore_tab.set_service_selector_width(pos);
+                iced::Command::none()
+            }
+            Message::Splitter2Event(event) => {
+                let msg = self.main_tab.explore_tab.splitter2.update(event);
+                if let Some(msg) = msg {
+                    return self.update(msg);
+                }
+                iced::Command::none()
+            }
+            Message::Splitter2Moved(pos) => {
+                self.main_tab.explore_tab.set_resource_selector_width(pos);
+                iced::Command::none()
+            }
+            Message::DoNothing => iced::Command::none(),
+            Message::DoNothingOnToggle(_) => iced::Command::none(),
         }
     }
 

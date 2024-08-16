@@ -635,6 +635,8 @@ dependencies = [
  "iced",
  "iced_aw",
  "lazy_static",
+ "lyon_algorithms",
+ "num-traits",
  "once_cell",
  "regex",
  "serde",

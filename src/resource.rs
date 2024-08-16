@@ -5,12 +5,12 @@ use crate::{error::Error, service::Service};
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum Resource {
-    LambdaFunction(LambdaFunctionInfo),
+    LambdaFunction(Box<LambdaFunctionInfo>),
     S3Bucket(BucketInfo),
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct LambdaFunctionInfo(aws_sdk_lambda::types::FunctionConfiguration);
+pub struct LambdaFunctionInfo(pub aws_sdk_lambda::types::FunctionConfiguration);
 
 impl Eq for LambdaFunctionInfo {}
 
@@ -21,7 +21,7 @@ impl std::hash::Hash for LambdaFunctionInfo {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct BucketInfo(aws_sdk_s3::types::Bucket);
+pub struct BucketInfo(pub aws_sdk_s3::types::Bucket);
 
 impl Eq for BucketInfo {}
 
@@ -38,13 +38,19 @@ lazy_static! {
 impl std::fmt::Display for Resource {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::LambdaFunction(info) => write!(f, "{}", info.0.function_name.as_ref().unwrap_or(&UNNAMED)),
+            Self::LambdaFunction(info) => {
+                write!(f, "{}", info.0.function_name.as_ref().unwrap_or(&UNNAMED))
+            }
             Self::S3Bucket(info) => write!(f, "{}", info.0.name.as_ref().unwrap_or(&UNNAMED)),
         }
     }
 }
 
-pub async fn load_resources(profile: String, region: String, service: &Service) -> Result<Vec<Resource>, Error> {
+pub async fn load_resources(
+    profile: String,
+    region: String,
+    service: &Service,
+) -> Result<Vec<Resource>, Error> {
     match service {
         Service::Lambda => load_lambda_functions(profile, region).await,
         Service::S3 => load_s3_buckets(profile, region).await,
@@ -69,7 +75,10 @@ async fn load_lambda_functions(profile: String, region: String) -> Result<Vec<Re
 
     let mut functions = result?;
     functions.sort_by_key(|f| f.function_name.clone());
-    Ok(functions.into_iter().map(|f| Resource::LambdaFunction(LambdaFunctionInfo(f))).collect())
+    Ok(functions
+        .into_iter()
+        .map(|f| Resource::LambdaFunction(Box::new(LambdaFunctionInfo(f))))
+        .collect())
 }
 
 async fn load_s3_buckets(profile: String, region: String) -> Result<Vec<Resource>, Error> {
@@ -80,14 +89,13 @@ async fn load_s3_buckets(profile: String, region: String) -> Result<Vec<Resource
         .await;
 
     let client = aws_sdk_s3::Client::new(&cfg);
-    let out = client
-        .list_buckets()
-        .send()
-        .await?;
+    let out = client.list_buckets().send().await?;
 
-    let mut buckets = out
-        .buckets().to_owned();
+    let mut buckets = out.buckets().to_owned();
     buckets.sort_by_key(|b| b.name.clone());
 
-    Ok(buckets.into_iter().map(|b| Resource::S3Bucket(BucketInfo(b))).collect())
+    Ok(buckets
+        .into_iter()
+        .map(|b| Resource::S3Bucket(BucketInfo(b)))
+        .collect())
 }
