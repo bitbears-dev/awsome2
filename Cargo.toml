@@ -11,8 +11,8 @@ aws-sdk-s3 = "1.42.0"
 aws-smithy-runtime-api = { version = "1.7.0", features = ["client"] }
 clap = { version = "4.5.7", features = ["derive"] }
 directories = "5.0.1"
-iced = { version = "0.12.1", features = ["tokio"] }
-iced_aw = "0.9.3"
+iced = { git = "https://github.com/iced-rs/iced", features = ["tokio"] }
+iced_aw = { git = "https://github.com/iced-rs/iced_aw" }
 lazy_static = "1.5.0"
 lyon_algorithms = "1.0.4"
 num-traits = "0.2.19"

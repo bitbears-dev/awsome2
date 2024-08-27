@@ -120,8 +120,8 @@ impl LambdaFunctionDetails {
     fn render_environment_variables(&self, f: &LambdaFunctionInfo) -> Element<Message> {
         let mut c = column![text("Environment variables: ")
             .width(Length::Fixed(200.0))
-            .horizontal_alignment(iced::alignment::Horizontal::Right)
-            .vertical_alignment(iced::alignment::Vertical::Center)];
+            .align_x(iced::alignment::Horizontal::Right)
+            .align_y(iced::alignment::Vertical::Center)];
 
         let Some(env) = f.0.environment.as_ref() else {
             return c.into();
@@ -137,7 +137,6 @@ impl LambdaFunctionDetails {
                     text_input("", k).on_input(do_nothing),
                     text_input("", v).on_input(do_nothing),
                 ]
-                .padding([0, 0, 0, 4])
                 .spacing(4),
             )
         }
@@ -158,11 +157,10 @@ impl LambdaFunctionDetails {
             text(format!("{}: ", label))
                 .width(Length::Fixed(200.0))
                 .height(Length::Fixed(32.0))
-                .horizontal_alignment(iced::alignment::Horizontal::Right)
-                .vertical_alignment(iced::alignment::Vertical::Center),
+                .align_x(iced::alignment::Horizontal::Right)
+                .align_y(iced::alignment::Vertical::Center),
             value,
         ]
-        .padding([0, 0, 0, 4])
         .spacing(4)
         .into()
     }
@@ -181,14 +179,13 @@ impl LambdaFunctionDetails {
             text(format!("{}: ", label))
                 .width(Length::Fixed(200.0))
                 .height(Length::Fixed(32.0))
-                .horizontal_alignment(iced::alignment::Horizontal::Right)
-                .vertical_alignment(iced::alignment::Vertical::Center),
+                .align_x(iced::alignment::Horizontal::Right)
+                .align_y(iced::alignment::Vertical::Center),
             value,
-            text(unit.unwrap_or(""))
+            text(unit.unwrap_or("").to_string())
                 .height(Length::Fixed(32.0))
-                .vertical_alignment(iced::alignment::Vertical::Center),
+                .align_y(iced::alignment::Vertical::Center),
         ]
-        .padding([0, 0, 0, 4])
         .spacing(4)
         .into()
     }
@@ -200,10 +197,7 @@ impl LambdaFunctionDetails {
                 checkbox(label, false).on_toggle_maybe(false.then_some(Message::DoNothingOnToggle))
             }
         };
-        row![value.width(Length::Fill)]
-            .padding([0, 0, 0, 4])
-            .spacing(4)
-            .into()
+        row![value.width(Length::Fill)].spacing(4).into()
     }
 }
 

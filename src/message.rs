@@ -15,11 +15,7 @@ pub enum Message {
     ResourcesLoaded(Vec<Resource>),
     ResourceSelected(usize, Resource),
 
-    Splitter1Event(crate::splitter::Event),
-    Splitter1Moved(f32),
-
-    Splitter2Event(crate::splitter::Event),
-    Splitter2Moved(f32),
+    ExploreTabPaneResized(iced::widget::pane_grid::ResizeEvent),
 
     DoNothing,
     #[allow(dead_code)]

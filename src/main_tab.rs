@@ -1,6 +1,6 @@
 use iced::{
     widget::{button, column, container, row, text, Space},
-    Color, Element,
+    Element, Theme,
 };
 
 use crate::{
@@ -67,7 +67,7 @@ impl MainTab {
             PaneType::Explore => "Explore",
             PaneType::Projects => "Projects",
         })
-        .vertical_alignment(iced::alignment::Vertical::Bottom)
+        .align_y(iced::alignment::Vertical::Bottom)
         .height(iced::Length::Fixed(32.0))
         .into()
     }
@@ -79,9 +79,9 @@ impl MainTab {
         ])
         .width(state.get_side_drawer_width())
         .height(iced::Length::Fill)
-        .style(container::Appearance {
-            background: Some(iced::Background::Color(Color::from_rgb8(0x33, 0x33, 0x33))),
-            ..Default::default()
+        .style(|theme: &Theme| {
+            let palette = theme.extended_palette();
+            container::Style::default().background(palette.background.weak.color)
         })
         .into()
     }
@@ -98,7 +98,7 @@ impl MainTab {
                 icon,
                 text("Explore")
                     .height(iced::Length::Fixed(32.0))
-                    .vertical_alignment(iced::alignment::Vertical::Center)
+                    .align_y(iced::alignment::Vertical::Center)
             ],
             false => row![icon],
         };
@@ -120,7 +120,7 @@ impl MainTab {
                 icon,
                 text("Projects")
                     .height(iced::Length::Fixed(32.0))
-                    .vertical_alignment(iced::alignment::Vertical::Center)
+                    .align_y(iced::alignment::Vertical::Center)
             ],
             false => row![icon],
         };

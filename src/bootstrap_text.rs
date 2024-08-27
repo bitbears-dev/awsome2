@@ -9,6 +9,6 @@ pub fn bootstrap_text(t: &str, size: f32, width: iced::Length, height: iced::Len
         .size(size)
         .width(width)
         .height(height)
-        .horizontal_alignment(iced::alignment::Horizontal::Center)
-        .vertical_alignment(iced::alignment::Vertical::Center)
+        .align_x(iced::alignment::Horizontal::Center)
+        .align_y(iced::alignment::Vertical::Center)
 }

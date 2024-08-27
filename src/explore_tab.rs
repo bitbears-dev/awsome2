@@ -1,10 +1,14 @@
 use std::time::Duration;
 
 use iced::{
-    widget::{column, container, pick_list, row, text},
+    widget::{
+        column, container,
+        pane_grid::{self, PaneGrid},
+        pick_list, text,
+    },
     Element, Length,
 };
-use iced_aw::{SelectionList, SelectionListStyles};
+use iced_aw::SelectionList;
 
 use crate::{
     easing,
@@ -15,48 +19,88 @@ use crate::{
     profiles::load_profiles,
     resource::{BucketInfo, Resource},
     service::Service,
-    splitter::Splitter,
 };
+
+#[derive(Clone, Debug)]
+struct Pane {
+    id: PaneId,
+}
+
+#[derive(Clone, Debug)]
+enum PaneId {
+    ServiceSelector,
+    ResourceSelector,
+    ResourceDetails,
+}
+
+impl std::fmt::Display for PaneId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PaneId::ServiceSelector => write!(f, "Service Selector"),
+            PaneId::ResourceSelector => write!(f, "Resource Selector"),
+            PaneId::ResourceDetails => write!(f, "Resource Details"),
+        }
+    }
+}
+
+impl Pane {
+    pub fn new(id: PaneId) -> Self {
+        Self { id }
+    }
+}
 
 const SERVICES: &[&Service] = &[&Service::Lambda, &Service::S3];
 
 pub struct ExploreTab {
+    panes: pane_grid::State<Pane>,
     profiles: Vec<String>,
     selected_profile: Option<String>,
     regions: Vec<String>,
     selected_region: Option<String>,
     services: Vec<&'static Service>,
     selected_service: Option<&'static Service>,
-    service_selector_width: f32,
-    pub splitter1: Splitter,
     loading_resources: bool,
     resources: Vec<Resource>,
     selected_resource: Option<Resource>,
-    resource_selector_width: f32,
-    pub splitter2: Splitter,
     lambda_function_details: LambdaFunctionDetails,
 }
 
 impl ExploreTab {
     pub fn new() -> Self {
+        let config = pane_grid::Configuration::Split {
+            axis: pane_grid::Axis::Vertical,
+            ratio: 0.15,
+            a: Box::new(pane_grid::Configuration::Pane(Pane::new(
+                PaneId::ServiceSelector,
+            ))),
+            b: Box::new(pane_grid::Configuration::Split {
+                axis: pane_grid::Axis::Vertical,
+                ratio: 0.2,
+                a: Box::new(pane_grid::Configuration::Pane(Pane::new(
+                    PaneId::ResourceSelector,
+                ))),
+                b: Box::new(pane_grid::Configuration::Pane(Pane::new(
+                    PaneId::ResourceDetails,
+                ))),
+            }),
+        };
+        let panes = pane_grid::State::with_configuration(config);
         let profiles = load_profiles().unwrap_or_else(|err| {
             eprintln!("Failed to load profiles: {:?}", err);
             vec![]
         });
+
         Self {
+            panes,
             profiles,
             selected_profile: None,
             regions: vec![],
             selected_region: None,
             services: SERVICES.to_vec(),
             selected_service: None,
-            service_selector_width: 150.0,
-            splitter1: Splitter::new(150.0, 100.0, 300.0, Message::Splitter1Moved),
             loading_resources: false,
             resources: vec![],
             selected_resource: None,
-            resource_selector_width: 150.0,
-            splitter2: Splitter::new(150.0, 100.0, 300.0, Message::Splitter2Moved),
             lambda_function_details: LambdaFunctionDetails::new(),
         }
     }
@@ -81,10 +125,6 @@ impl ExploreTab {
         self.selected_region.clone()
     }
 
-    pub fn set_service_selector_width(&mut self, width: f32) {
-        self.service_selector_width = width;
-    }
-
     pub fn set_selected_service(&mut self, service: &'static Service) {
         self.selected_service = Some(service);
     }
@@ -101,31 +141,35 @@ impl ExploreTab {
         self.selected_resource = Some(resource);
     }
 
-    pub fn set_resource_selector_width(&mut self, width: f32) {
-        self.resource_selector_width = width;
+    pub fn resize_pane(&mut self, event: iced::widget::pane_grid::ResizeEvent) {
+        self.panes.resize(event.split, event.ratio);
     }
 
     pub fn view(&self) -> Element<Message> {
-        let service_selector = self.render_service_selector();
-        let splitter1 = self.splitter1.view().map(Message::Splitter1Event);
-        let mut r = row![service_selector, splitter1];
-        if self.selected_service.is_some() {
-            let resource_selector = self.render_resource_selector();
-            r = r.push(resource_selector);
+        let pane_grid = PaneGrid::new(&self.panes, |_pane_number, pane, _is_maximized| {
+            let title_bar = pane_grid::TitleBar::new(text(pane.id.to_string()));
 
-            let splitter2 = self.splitter2.view().map(Message::Splitter2Event);
-            r = r.push(splitter2);
+            pane_grid::Content::new(self.view_content(pane))
+                .title_bar(title_bar)
+                .style(style::pane_active)
+        })
+        .on_resize(10, Message::ExploreTabPaneResized)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .spacing(10);
 
-            if self.selected_resource.is_some() {
-                let resource_details = self.render_resource_details();
-                r = r.push(resource_details);
-            }
-        }
-        container(r)
-            .padding(4.0)
-            .width(iced::Length::Fill)
-            .height(iced::Length::Fill)
+        container(pane_grid)
+            .width(Length::Fill)
+            .height(Length::Fill)
             .into()
+    }
+
+    fn view_content(&self, pane: &Pane) -> Element<Message> {
+        match pane.id {
+            PaneId::ServiceSelector => self.render_service_selector(),
+            PaneId::ResourceSelector => self.render_resource_selector(),
+            PaneId::ResourceDetails => self.render_resource_details(),
+        }
     }
 
     fn render_service_selector(&self) -> Element<Message> {
@@ -136,7 +180,7 @@ impl ExploreTab {
         )
         .width(Length::Fill);
         let mut c = column![profile_selector]
-            .width(iced::Length::Fixed(self.service_selector_width))
+            .width(iced::Length::Fill)
             .height(Length::Fill);
 
         if self.selected_profile.is_some() {
@@ -155,7 +199,7 @@ impl ExploreTab {
                 Message::ServiceSelected,
                 14.0,
                 5.0,
-                SelectionListStyles::Default,
+                iced_aw::style::selection_list::primary,
                 None,
                 get_default_font(),
             )
@@ -164,7 +208,7 @@ impl ExploreTab {
             c = c.push(service_selector);
         }
         container(c)
-            .width(iced::Length::Shrink)
+            .width(iced::Length::Fill)
             .height(iced::Length::Fill)
             .into()
     }
@@ -185,15 +229,15 @@ impl ExploreTab {
             Message::ResourceSelected,
             14.0,
             5.0,
-            SelectionListStyles::Default,
+            iced_aw::style::selection_list::primary,
             None,
             get_default_font(),
         )
-        .width(Length::Fixed(self.resource_selector_width))
+        .width(Length::Fill)
         .height(Length::Fill);
 
         container(list)
-            .width(iced::Length::Shrink)
+            .width(iced::Length::Fill)
             .height(iced::Length::Fill)
             .into()
     }
@@ -220,5 +264,23 @@ impl ExploreTab {
             b.0.name.as_ref().unwrap_or(&"Unnamed".to_string())
         )));
         c.into()
+    }
+}
+
+mod style {
+    use iced::{widget::container, Border, Theme};
+
+    pub fn pane_active(theme: &Theme) -> container::Style {
+        let palette = theme.extended_palette();
+
+        container::Style {
+            background: Some(palette.background.weak.color.into()),
+            border: Border {
+                width: 2.0,
+                color: palette.background.strong.color,
+                ..Border::default()
+            },
+            ..Default::default()
+        }
     }
 }

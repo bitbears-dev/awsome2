@@ -1,6 +1,8 @@
 use iced::{
+    border::Radius,
+    theme::palette::Extended,
     widget::{container, mouse_area, text},
-    Border, Element,
+    Element, Theme,
 };
 
 use crate::message::Message;
@@ -96,25 +98,24 @@ impl Splitter {
         )
         .width(iced::Length::Fixed(12.0))
         .height(iced::Length::Fill)
-        .style(container::Appearance {
-            background: self.get_background_color(),
-            border: Border {
-                color: iced::Color::from_rgb8(0x33, 0x33, 0x33),
-                width: 1.0,
-                ..Default::default()
-            },
-            ..Default::default()
+        .style(|theme: &Theme| {
+            let palette = theme.extended_palette();
+            container::Style::default()
+                .background(self.get_background_color(&palette))
+                .border(iced::Border {
+                    color: palette.primary.base.color,
+                    width: 1.0,
+                    radius: Radius::default(),
+                })
         })
         .into()
     }
 
-    fn get_background_color(&self) -> Option<iced::Background> {
+    fn get_background_color(&self, palette: &Extended) -> iced::Background {
         if self.state.hover {
-            Some(iced::Background::Color(iced::Color::from_rgb8(
-                0x00, 0x00, 0xf0,
-            )))
+            iced::Background::Color(iced::Color::from_rgb8(0x00, 0x00, 0xf0))
         } else {
-            None
+            palette.background.base.color.into()
         }
     }
 }
