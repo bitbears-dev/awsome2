@@ -4,7 +4,7 @@ build: fmt test lint
 
 .PHONY: run
 run: fmt test lint
-	RUST_BACKTRACE=1 cargo run
+	RUST_BACKTRACE=1 cargo run -- --workspace-file $(HOME)/.config/awsome/workspaces/default.yaml
 
 .PHONY: fmt
 fmt:

@@ -1,9 +1,11 @@
-use crate::{error::Error, resource::Resource, service::Service, state::State};
+use crate::{
+    error::Error, resource::Resource, service::Service, workspace::Project, workspace::Workspace,
+};
 
 #[derive(Debug, Clone)]
 pub enum Message {
     FontLoaded(Result<(), iced::font::Error>),
-    WorkspaceLoaded(Result<State, Error>),
+    WorkspaceLoaded(Result<Workspace, Error>),
     SideDrawerToggled,
     ActivateExploreTab,
     ActivateProjectsTab,
@@ -16,6 +18,15 @@ pub enum Message {
     ResourceSelected(usize, Resource),
 
     ExploreTabPaneResized(iced::widget::pane_grid::ResizeEvent),
+
+    ProjectSelected(usize, Project),
+    //ProjectResourceSelected(usize, Resource),
+    SyncResourcesTableHeader(iced::widget::scrollable::AbsoluteOffset),
+
+    ErrorOccurred(Error),
+
+    LogReceiverReady(iced::futures::channel::mpsc::Sender<String>),
+    LogReceived(String),
 
     DoNothing,
     #[allow(dead_code)]

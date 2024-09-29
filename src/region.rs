@@ -2,7 +2,10 @@ use aws_config::{BehaviorVersion, Region};
 
 use crate::error::Error;
 
-pub async fn load_regions(profile: String, nearest_region: String) -> Result<Vec<String>, Error> {
+pub async fn load_region_names(
+    profile: String,
+    nearest_region: String,
+) -> Result<Vec<String>, Error> {
     let config = aws_config::defaults(BehaviorVersion::v2024_03_28())
         .profile_name(profile)
         .region(Region::new(nearest_region.to_string()))

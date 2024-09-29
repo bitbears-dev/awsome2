@@ -7,12 +7,13 @@ use iced::{
 };
 
 use crate::{
-    main_tab::MainTab, message::Message, pane_type::PaneType, regions::load_regions,
-    resource::load_resources, state::State, workspace,
+    log_receiver, main_tab::MainTab, message::Message, pane_type::PaneType,
+    region::load_region_names, resource::load_resources, state::State, workspace::Workspace,
 };
 
 #[derive(Default, Parser)]
 pub struct AppFlags {
+    #[clap(short, long)]
     workspace_file: Option<PathBuf>,
 }
 
@@ -58,7 +59,7 @@ impl AwsomeApp {
                 )))
                 .map(Message::FontLoaded),
                 Task::perform(
-                    workspace::load(flags.workspace_file),
+                    Workspace::load(flags.workspace_file),
                     Message::WorkspaceLoaded,
                 ),
             ]),
@@ -71,21 +72,31 @@ impl AwsomeApp {
                 match result {
                     Ok(_) => {}
                     Err(e) => {
-                        eprintln!("Error: {:?}", e);
+                        eprintln!("Error while loading font: {:?}", e);
                     }
                 }
                 Task::none()
             }
-            Message::WorkspaceLoaded(state) => {
-                match state {
-                    Ok(state) => {
-                        self.state = Some(state);
-                    }
+            Message::WorkspaceLoaded(workspace) => {
+                let workspace = match workspace {
+                    Ok(workspace) => workspace,
                     Err(e) => {
-                        eprintln!("Error: {:?}", e);
+                        eprintln!("Error while loading workspace: {:?}", e);
                         self.state = Some(State::new());
+                        return Task::done(Message::ErrorOccurred(e));
                     }
-                }
+                };
+
+                let state = match State::from_workspace(workspace) {
+                    Ok(state) => state,
+                    Err(e) => {
+                        eprintln!("Error while loading state: {:?}", e);
+                        self.state = Some(State::new());
+                        return Task::done(Message::ErrorOccurred(e));
+                    }
+                };
+
+                self.state = Some(state);
                 Task::none()
             }
             Message::SideDrawerToggled => {
@@ -118,12 +129,12 @@ impl AwsomeApp {
                     .map(|s| s.get_nearest_region().to_string())
                     .unwrap_or("us-east-1".to_string());
                 Task::perform(
-                    load_regions(profile.clone(), nearest_region),
+                    load_region_names(profile.clone(), nearest_region),
                     |res| match res {
                         Ok(regions) => Message::RegionsLoaded(regions),
                         Err(e) => {
-                            eprintln!("Error: {:?}", e);
-                            Message::RegionsLoaded(vec![])
+                            eprintln!("Error while loading regions: {:?}", e);
+                            Message::ErrorOccurred(e)
                         }
                     },
                 )
@@ -151,8 +162,8 @@ impl AwsomeApp {
                 Task::perform(load_resources(profile, region, service), |res| match res {
                     Ok(resources) => Message::ResourcesLoaded(resources),
                     Err(e) => {
-                        eprintln!("Error: {:?}", e);
-                        Message::ResourcesLoaded(vec![])
+                        eprintln!("Error while loading resource: {:?}", e);
+                        Message::ErrorOccurred(e)
                     }
                 })
             }
@@ -169,8 +180,44 @@ impl AwsomeApp {
                 self.main_tab.explore_tab.resize_pane(event);
                 Task::none()
             }
+            Message::ProjectSelected(_index, project) => {
+                self.main_tab
+                    .projects_tab
+                    .set_selected_project(Some(project));
+                Task::none()
+            }
+            //Message::ProjectResourceSelected(_index, resource) => {
+            //    self.main_tab
+            //        .projects_tab
+            //        .set_selected_resource(Some(resource));
+            //    Task::none()
+            //}
+            Message::SyncResourcesTableHeader(offset) => self
+                .main_tab
+                .projects_tab
+                .sync_resources_table_header_offset(offset),
+            Message::ErrorOccurred(e) => {
+                let Some(state) = &mut self.state else {
+                    return Task::none();
+                };
+                state.append_log(format!("Error: {:?}", e));
+                Task::none()
+            }
+
             Message::DoNothing => Task::none(),
             Message::DoNothingOnToggle(_) => Task::none(),
+            Message::LogReceiverReady(sender) => {
+                if let Some(state) = &mut self.state {
+                    state.set_log_sender(sender);
+                }
+                Task::none()
+            }
+            Message::LogReceived(log) => {
+                if let Some(state) = &mut self.state {
+                    state.append_log(log);
+                }
+                Task::none()
+            }
         }
     }
 
@@ -179,5 +226,9 @@ impl AwsomeApp {
             None => self.loading_view(),
             Some(state) => self.main_tab.view(state),
         }
+    }
+
+    pub fn subscription(&self) -> iced::Subscription<Message> {
+        iced::Subscription::run(log_receiver::start)
     }
 }

@@ -4,29 +4,32 @@ use iced::{
 };
 
 use crate::{
-    bootstrap_text::bootstrap_text, explore_tab::ExploreTab, message::Message, pane_type::PaneType,
-    state::State,
+    bootstrap_text::bootstrap_text, explore_tab::ExploreTab, footer::Footer, message::Message,
+    pane_type::PaneType, projects_tab::ProjectsTab, state::State,
 };
 
 pub struct MainTab {
     pub explore_tab: ExploreTab,
+    pub projects_tab: ProjectsTab,
+    pub footer: Footer,
 }
 
 impl MainTab {
     pub fn new() -> Self {
         Self {
             explore_tab: ExploreTab::new(),
+            projects_tab: ProjectsTab::new(),
+            footer: Footer::new(),
         }
     }
 
-    pub fn view(&self, state: &State) -> Element<Message> {
-        let mut c = column![self.render_header(state)];
+    pub fn view<'a>(&'a self, state: &'a State) -> Element<'a, Message> {
+        let r = row![
+            self.render_side_drawer(state),
+            self.render_main_tab_pane(state)
+        ];
 
-        let mut r = row![self.render_side_drawer(state)];
-
-        r = r.push(self.render_main_tab_pane(state));
-
-        c = c.push(r);
+        let c = column![self.render_header(state), r, self.footer.view(state)];
 
         let cont: Element<Message> = container(c).into();
         //let cont = cont.explain(Color::from_rgb(255.0, 0.0, 0.0));
@@ -130,14 +133,10 @@ impl MainTab {
             .into()
     }
 
-    fn render_main_tab_pane(&self, state: &State) -> Element<Message> {
+    fn render_main_tab_pane<'a>(&'a self, state: &'a State) -> Element<'a, Message> {
         match state.get_active_pane() {
             PaneType::Explore => self.explore_tab.view(),
-            PaneType::Projects => self.render_projects_tab(),
+            PaneType::Projects => self.projects_tab.view(state),
         }
-    }
-
-    fn render_projects_tab(&self) -> Element<Message> {
-        text("Projects Tab").into()
     }
 }

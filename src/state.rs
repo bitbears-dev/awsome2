@@ -1,29 +1,40 @@
+use iced::futures::channel::mpsc::Sender;
+
 use crate::{error::Error, pane_type::PaneType, workspace::Workspace};
 
 #[derive(Clone, Debug)]
 pub struct State {
+    pub workspace: Workspace,
     nearest_region: String,
     side_drawer_open: bool,
     side_drawer_width: f32,
     active_pane: PaneType,
+    log_sender: Option<iced::futures::channel::mpsc::Sender<String>>,
+    logs: Vec<String>,
 }
 
 impl State {
     pub fn new() -> Self {
         Self {
+            workspace: Workspace::default(),
             nearest_region: String::from("ap-northeast-1"), // TODO: get from config
             side_drawer_open: false,
             side_drawer_width: 150.0,
             active_pane: PaneType::Explore,
+            log_sender: None,
+            logs: Vec::new(),
         }
     }
 
-    pub fn from_workspace(_ws: Workspace) -> Result<Self, Error> {
+    pub fn from_workspace(ws: Workspace) -> Result<Self, Error> {
         Ok(Self {
+            workspace: ws,
             nearest_region: String::from("ap-northeast-1"), // TODO: get from config
             side_drawer_open: false,
             side_drawer_width: 150.0,
             active_pane: PaneType::Explore,
+            log_sender: None,
+            logs: Vec::new(),
         })
     }
 
@@ -56,5 +67,17 @@ impl State {
 
     pub fn set_active_pane(&mut self, pane_type: PaneType) {
         self.active_pane = pane_type;
+    }
+
+    pub fn set_log_sender(&mut self, log_sender: Sender<String>) {
+        self.log_sender = Some(log_sender);
+    }
+
+    pub fn append_log(&mut self, log: String) {
+        self.logs.push(log);
+    }
+
+    pub fn get_logs(&self) -> Vec<String> {
+        self.logs.clone()
     }
 }

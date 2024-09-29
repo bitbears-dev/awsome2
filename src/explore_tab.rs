@@ -11,14 +11,8 @@ use iced::{
 use iced_aw::SelectionList;
 
 use crate::{
-    easing,
-    fonts::get_default_font,
-    lambda_function_details::LambdaFunctionDetails,
-    linear::Linear,
-    message::Message,
-    profiles::load_profiles,
-    resource::{BucketInfo, Resource},
-    service::Service,
+    easing, fonts::get_default_font, linear::Linear, message::Message, profile::load_profile_names,
+    resource::Resource, resource_details::ResourceDetails, service::Service, styles,
 };
 
 #[derive(Clone, Debug)]
@@ -61,8 +55,8 @@ pub struct ExploreTab {
     selected_service: Option<&'static Service>,
     loading_resources: bool,
     resources: Vec<Resource>,
-    selected_resource: Option<Resource>,
-    lambda_function_details: LambdaFunctionDetails,
+    //selected_resource: Option<Resource>,
+    resource_details: ResourceDetails,
 }
 
 impl ExploreTab {
@@ -85,7 +79,7 @@ impl ExploreTab {
             }),
         };
         let panes = pane_grid::State::with_configuration(config);
-        let profiles = load_profiles().unwrap_or_else(|err| {
+        let profiles = load_profile_names().unwrap_or_else(|err| {
             eprintln!("Failed to load profiles: {:?}", err);
             vec![]
         });
@@ -100,8 +94,8 @@ impl ExploreTab {
             selected_service: None,
             loading_resources: false,
             resources: vec![],
-            selected_resource: None,
-            lambda_function_details: LambdaFunctionDetails::new(),
+            //selected_resource: None,
+            resource_details: ResourceDetails::new(),
         }
     }
 
@@ -138,7 +132,7 @@ impl ExploreTab {
     }
 
     pub fn set_selected_resource(&mut self, resource: Resource) {
-        self.selected_resource = Some(resource);
+        self.resource_details.set_selected_resource(Some(resource));
     }
 
     pub fn resize_pane(&mut self, event: iced::widget::pane_grid::ResizeEvent) {
@@ -151,7 +145,7 @@ impl ExploreTab {
 
             pane_grid::Content::new(self.view_content(pane))
                 .title_bar(title_bar)
-                .style(style::pane_active)
+                .style(styles::pane_active)
         })
         .on_resize(10, Message::ExploreTabPaneResized)
         .width(Length::Fill)
@@ -168,7 +162,7 @@ impl ExploreTab {
         match pane.id {
             PaneId::ServiceSelector => self.render_service_selector(),
             PaneId::ResourceSelector => self.render_resource_selector(),
-            PaneId::ResourceDetails => self.render_resource_details(),
+            PaneId::ResourceDetails => self.resource_details.view(),
         }
     }
 
@@ -240,47 +234,5 @@ impl ExploreTab {
             .width(iced::Length::Fill)
             .height(iced::Length::Fill)
             .into()
-    }
-
-    fn render_resource_details(&self) -> Element<Message> {
-        match &self.selected_resource {
-            Some(resource) => match resource {
-                Resource::LambdaFunction(f) => {
-                    return self.lambda_function_details.render(f);
-                }
-                Resource::S3Bucket(b) => {
-                    return self.render_s3_bucket_details(b);
-                }
-            },
-            None => container(text("No resource selected").size(24)).into(),
-        }
-    }
-
-    fn render_s3_bucket_details(&self, b: &BucketInfo) -> Element<Message> {
-        let mut c = column![];
-        c = c.push(text("S3 Bucket Details").size(24));
-        c = c.push(text(format!(
-            "Name: {}",
-            b.0.name.as_ref().unwrap_or(&"Unnamed".to_string())
-        )));
-        c.into()
-    }
-}
-
-mod style {
-    use iced::{widget::container, Border, Theme};
-
-    pub fn pane_active(theme: &Theme) -> container::Style {
-        let palette = theme.extended_palette();
-
-        container::Style {
-            background: Some(palette.background.weak.color.into()),
-            border: Border {
-                width: 2.0,
-                color: palette.background.strong.color,
-                ..Border::default()
-            },
-            ..Default::default()
-        }
     }
 }

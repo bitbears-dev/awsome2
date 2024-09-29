@@ -4,16 +4,21 @@ mod easing;
 mod error;
 mod explore_tab;
 mod fonts;
-mod lambda_function_details;
+mod footer;
 mod linear;
+mod log_receiver;
 mod main_tab;
 mod message;
 mod pane_type;
-mod profiles;
-mod regions;
+mod profile;
+mod projects_tab;
+mod region;
 mod resource;
+mod resource_details;
+mod resources_table;
 mod service;
 mod state;
+mod styles;
 mod workspace;
 
 use crate::app::AwsomeApp;
@@ -29,5 +34,6 @@ fn main() -> iced::Result {
             antialiasing: true,
             ..iced::Settings::default()
         })
+        .subscription(AwsomeApp::subscription)
         .run_with(AwsomeApp::new)
 }
