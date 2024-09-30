@@ -136,7 +136,7 @@ impl MainTab {
     fn render_main_tab_pane<'a>(&'a self, state: &'a State) -> Element<'a, Message> {
         match state.get_active_pane() {
             PaneType::Explore => self.explore_tab.view(),
-            PaneType::Projects => self.projects_tab.view(state),
+            PaneType::Projects => self.projects_tab.view(),
         }
     }
 }

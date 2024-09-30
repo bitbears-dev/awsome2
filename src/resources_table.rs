@@ -8,7 +8,7 @@ use iced::{
 };
 use iced_table::table;
 
-use crate::{message::Message, workspace::Project};
+use crate::{message::Message, service::Service, workspace::Project};
 
 pub struct ResourcesTable {
     header_id: iced::widget::scrollable::Id,
@@ -28,14 +28,22 @@ impl ResourcesTable {
                 Column::new(ColumnKind::Name),
                 Column::new(ColumnKind::Profile),
                 Column::new(ColumnKind::Region),
-                Column::new(ColumnKind::Service),
             ],
             rows: vec![],
         }
     }
 
-    pub fn set_selected_project(&mut self, project: Option<Project>) {
+    pub fn set_selected_project_and_service(
+        &mut self,
+        project: Option<Project>,
+        service: Option<Service>,
+    ) {
         let Some(project) = project else {
+            self.rows = vec![];
+            return;
+        };
+
+        let Some(service) = service else {
             self.rows = vec![];
             return;
         };
@@ -43,11 +51,16 @@ impl ResourcesTable {
         self.rows = project
             .resources
             .iter()
-            .map(|r| Row {
-                profile: r.profile.clone(),
-                region: r.region.clone(),
-                service: r.service.to_string(),
-                name: r.get_display_name(),
+            .filter_map(|r| {
+                if r.service == service {
+                    Some(Row {
+                        profile: r.profile.clone(),
+                        region: r.region.clone(),
+                        name: r.get_display_name(),
+                    })
+                } else {
+                    None
+                }
             })
             .collect();
     }
@@ -83,7 +96,6 @@ impl Column {
             ColumnKind::Name => 320.0,
             ColumnKind::Profile => 120.0,
             ColumnKind::Region => 180.0,
-            ColumnKind::Service => 100.0,
         };
         Self {
             kind,
@@ -97,7 +109,6 @@ enum ColumnKind {
     Name,
     Profile,
     Region,
-    Service,
 }
 
 impl<'a> iced_table::table::Column<'a, Message, Theme, Renderer> for Column {
@@ -108,7 +119,6 @@ impl<'a> iced_table::table::Column<'a, Message, Theme, Renderer> for Column {
             ColumnKind::Name => "Name",
             ColumnKind::Profile => "Profile",
             ColumnKind::Region => "Region",
-            ColumnKind::Service => "Service",
         };
 
         container(text(content)).center_y(24).into()
@@ -119,7 +129,6 @@ impl<'a> iced_table::table::Column<'a, Message, Theme, Renderer> for Column {
             ColumnKind::Name => text(row.name.clone()),
             ColumnKind::Profile => text(row.profile.clone()),
             ColumnKind::Region => text(row.region.clone()),
-            ColumnKind::Service => text(row.service.clone()),
         };
         container(content).center_y(24).into()
     }
@@ -141,5 +150,4 @@ struct Row {
     name: String,
     profile: String,
     region: String,
-    service: String,
 }

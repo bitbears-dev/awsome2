@@ -1,5 +1,8 @@
 use crate::{
-    error::Error, resource::Resource, service::Service, workspace::Project, workspace::Workspace,
+    error::Error,
+    resource::Resource,
+    service::Service,
+    workspace::{Project, Workspace},
 };
 
 #[derive(Debug, Clone)]
@@ -20,6 +23,7 @@ pub enum Message {
     ExploreTabPaneResized(iced::widget::pane_grid::ResizeEvent),
 
     ProjectSelected(usize, Project),
+    ProjectServiceSelected(usize, Project, Service),
     //ProjectResourceSelected(usize, Resource),
     SyncResourcesTableHeader(iced::widget::scrollable::AbsoluteOffset),
 

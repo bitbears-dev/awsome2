@@ -96,6 +96,9 @@ impl AwsomeApp {
                     }
                 };
 
+                self.main_tab
+                    .projects_tab
+                    .set_projects(state.workspace.projects.clone());
                 self.state = Some(state);
                 Task::none()
             }
@@ -183,7 +186,23 @@ impl AwsomeApp {
             Message::ProjectSelected(_index, project) => {
                 self.main_tab
                     .projects_tab
-                    .set_selected_project(Some(project));
+                    .project_service_selector
+                    .toggle_project(&project);
+                self.main_tab
+                    .projects_tab
+                    .project_service_selector
+                    .set_selected_project(Some(project.clone()));
+                Task::none()
+            }
+            Message::ProjectServiceSelected(_index, project, service) => {
+                self.main_tab
+                    .projects_tab
+                    .project_service_selector
+                    .set_selected_service(Some(project.clone()), Some(service.clone()));
+                self.main_tab
+                    .projects_tab
+                    .resources_table
+                    .set_selected_project_and_service(Some(project), Some(service));
                 Task::none()
             }
             //Message::ProjectResourceSelected(_index, resource) => {

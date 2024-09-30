@@ -2,7 +2,6 @@ pub mod project;
 pub mod resource;
 
 pub use project::Project;
-pub use resource::Resource;
 
 use std::{fs::File, path::PathBuf};
 
