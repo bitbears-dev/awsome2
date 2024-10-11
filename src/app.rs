@@ -7,8 +7,13 @@ use iced::{
 };
 
 use crate::{
-    log_receiver, main_tab::MainTab, message::Message, pane_type::PaneType,
-    region::load_region_names, resource::load_resources, state::State, workspace::Workspace,
+    main_tab::MainTab,
+    message::Message,
+    pane_type::PaneType,
+    region::load_region_names,
+    resource::{list_resources, load_resource},
+    state::State,
+    workspace::Workspace,
 };
 
 #[derive(Default, Parser)]
@@ -162,7 +167,7 @@ impl AwsomeApp {
                 };
 
                 self.main_tab.explore_tab.set_loading_resources(true);
-                Task::perform(load_resources(profile, region, service), |res| match res {
+                Task::perform(list_resources(profile, region, service), |res| match res {
                     Ok(resources) => Message::ResourcesLoaded(resources),
                     Err(e) => {
                         eprintln!("Error while loading resource: {:?}", e);
@@ -215,6 +220,41 @@ impl AwsomeApp {
                 .main_tab
                 .projects_tab
                 .sync_resources_table_header_offset(offset),
+            Message::ResourcesTableColumnResizing(index, offset) => {
+                self.main_tab
+                    .projects_tab
+                    .resources_table
+                    .set_column_resize_offset(index, offset);
+                Task::none()
+            }
+            Message::ResourcesTableColumnResized => {
+                self.main_tab
+                    .projects_tab
+                    .resources_table
+                    .confirm_column_resizing();
+                Task::none()
+            }
+            Message::ResourcesTableCellClicked(col, row, res) => {
+                eprintln!("col: {}, row: {}, res: {:?}", col, row, res);
+                let Some(ref mut state) = &mut self.state else {
+                    return Task::none();
+                };
+                state.workspace.set_selected_resource(Some(res.clone()));
+                Task::perform(load_resource(res), |res| match res {
+                    Ok(details) => Message::ResourceDetailsLoaded(details),
+                    Err(e) => {
+                        eprintln!("Error while loading resource details: {:?}", e);
+                        Message::ErrorOccurred(e)
+                    }
+                })
+            }
+            Message::ResourceDetailsLoaded(details) => {
+                self.main_tab
+                    .projects_tab
+                    .resource_details
+                    .set_resource(Some(details));
+                Task::none()
+            }
             Message::ErrorOccurred(e) => {
                 let Some(state) = &mut self.state else {
                     return Task::none();
@@ -225,18 +265,20 @@ impl AwsomeApp {
 
             Message::DoNothing => Task::none(),
             Message::DoNothingOnToggle(_) => Task::none(),
-            Message::LogReceiverReady(sender) => {
-                if let Some(state) = &mut self.state {
-                    state.set_log_sender(sender);
-                }
-                Task::none()
-            }
-            Message::LogReceived(log) => {
-                if let Some(state) = &mut self.state {
-                    state.append_log(log);
-                }
-                Task::none()
-            }
+            //Message::LogReceiverReady(sender) => {
+            //    info!("[Message::LogReceiverReady] sender: {:?}", sender);
+            //    if let Some(state) = &mut self.state {
+            //        state.append_log("Log receiver ready".to_string());
+            //        state.set_log_sender(sender);
+            //    }
+            //    Task::none()
+            //}
+            //Message::LogReceived(log) => {
+            //    if let Some(state) = &mut self.state {
+            //        state.append_log(log);
+            //    }
+            //    Task::none()
+            //}
         }
     }
 
@@ -247,7 +289,7 @@ impl AwsomeApp {
         }
     }
 
-    pub fn subscription(&self) -> iced::Subscription<Message> {
-        iced::Subscription::run(log_receiver::start)
-    }
+    //pub fn subscription(&self) -> iced::Subscription<Message> {
+    //    iced::Subscription::run(log_receiver::start)
+    //}
 }

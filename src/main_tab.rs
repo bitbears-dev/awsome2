@@ -5,7 +5,7 @@ use iced::{
 
 use crate::{
     bootstrap_text::bootstrap_text, explore_tab::ExploreTab, footer::Footer, message::Message,
-    pane_type::PaneType, projects_tab::ProjectsTab, state::State,
+    pane_type::PaneType, projects_tab::ProjectsTab, state::State, styles,
 };
 
 pub struct MainTab {
@@ -105,9 +105,14 @@ impl MainTab {
             ],
             false => row![icon],
         };
+        let button_style = match state.get_active_pane() {
+            PaneType::Explore => styles::side_drawer_button_selected,
+            _ => styles::side_drawer_button,
+        };
         button(button_content)
             .on_press(Message::ActivateExploreTab)
             .width(iced::Length::Fill)
+            .style(button_style)
             .into()
     }
 
@@ -127,9 +132,14 @@ impl MainTab {
             ],
             false => row![icon],
         };
+        let button_style = match state.get_active_pane() {
+            PaneType::Projects => styles::side_drawer_button_selected,
+            _ => styles::side_drawer_button,
+        };
         button(button_content)
             .on_press(Message::ActivateProjectsTab)
             .width(iced::Length::Fill)
+            .style(button_style)
             .into()
     }
 

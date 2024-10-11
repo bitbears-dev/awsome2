@@ -7,6 +7,8 @@ pub enum Error {
     Unknown,
     UnableToLoadAwsConfig,
     AwsSdk(String),
+    InvalidResourceDescriptor,
+    ResourceNotFound,
 }
 
 impl std::fmt::Display for Error {
@@ -15,6 +17,8 @@ impl std::fmt::Display for Error {
             Error::Unknown => write!(f, "Unknown error"),
             Error::UnableToLoadAwsConfig => write!(f, "Unable to load AWS config"),
             Error::AwsSdk(msg) => write!(f, "AWS SDK error: {}", msg),
+            Error::InvalidResourceDescriptor => write!(f, "Invalid resource descriptor"),
+            Error::ResourceNotFound => write!(f, "Resource not found"),
         }
     }
 }

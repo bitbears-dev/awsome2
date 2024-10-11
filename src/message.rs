@@ -2,7 +2,7 @@ use crate::{
     error::Error,
     resource::Resource,
     service::Service,
-    workspace::{Project, Workspace},
+    workspace::{Project, ResourceDescriptor, Workspace},
 };
 
 #[derive(Debug, Clone)]
@@ -26,12 +26,15 @@ pub enum Message {
     ProjectServiceSelected(usize, Project, Service),
     //ProjectResourceSelected(usize, Resource),
     SyncResourcesTableHeader(iced::widget::scrollable::AbsoluteOffset),
+    ResourcesTableColumnResizing(usize, f32),
+    ResourcesTableColumnResized,
+    ResourcesTableCellClicked(usize, usize, ResourceDescriptor),
+    ResourceDetailsLoaded(Resource),
 
     ErrorOccurred(Error),
 
-    LogReceiverReady(iced::futures::channel::mpsc::Sender<String>),
-    LogReceived(String),
-
+    //    LogReceiverReady(iced::futures::channel::mpsc::Sender<String>),
+    //    LogReceived(String),
     DoNothing,
     #[allow(dead_code)]
     DoNothingOnToggle(bool),

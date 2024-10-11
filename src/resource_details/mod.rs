@@ -26,7 +26,7 @@ impl ResourceDetails {
         }
     }
 
-    pub fn set_selected_resource(&mut self, resource: Option<Resource>) {
+    pub fn set_resource(&mut self, resource: Option<Resource>) {
         self.resource = resource;
     }
 

@@ -41,14 +41,14 @@ pub struct ProjectsTab {
     _projects: Vec<Project>,
     pub project_service_selector: ProjectServiceSelector,
     pub resources_table: ResourcesTable,
-    resource_details: ResourceDetails,
+    pub resource_details: ResourceDetails,
 }
 
 impl ProjectsTab {
     pub fn new() -> Self {
         let config = pane_grid::Configuration::Split {
             axis: pane_grid::Axis::Vertical,
-            ratio: 0.15,
+            ratio: 0.3,
             a: Box::new(pane_grid::Configuration::Pane(Pane::new(
                 PaneId::ProjectServiceSelector,
             ))),

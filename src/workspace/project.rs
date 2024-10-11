@@ -2,12 +2,12 @@ use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{service::Service, workspace::resource::Resource};
+use crate::{service::Service, workspace::resource_descriptor::ResourceDescriptor};
 
 #[derive(Debug, Clone, Default, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct Project {
     pub name: String,
-    pub resources: Vec<Resource>,
+    pub resources: Vec<ResourceDescriptor>,
 }
 
 impl std::fmt::Display for Project {

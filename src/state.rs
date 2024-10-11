@@ -1,5 +1,3 @@
-use iced::futures::channel::mpsc::Sender;
-
 use crate::{error::Error, pane_type::PaneType, workspace::Workspace};
 
 #[derive(Clone, Debug)]
@@ -9,7 +7,7 @@ pub struct State {
     side_drawer_open: bool,
     side_drawer_width: f32,
     active_pane: PaneType,
-    log_sender: Option<iced::futures::channel::mpsc::Sender<String>>,
+    //log_sender: Option<iced::futures::channel::mpsc::Sender<String>>,
     logs: Vec<String>,
 }
 
@@ -21,7 +19,7 @@ impl State {
             side_drawer_open: false,
             side_drawer_width: 150.0,
             active_pane: PaneType::Explore,
-            log_sender: None,
+            //log_sender: None,
             logs: Vec::new(),
         }
     }
@@ -33,7 +31,7 @@ impl State {
             side_drawer_open: false,
             side_drawer_width: 150.0,
             active_pane: PaneType::Explore,
-            log_sender: None,
+            //log_sender: None,
             logs: Vec::new(),
         })
     }
@@ -69,9 +67,9 @@ impl State {
         self.active_pane = pane_type;
     }
 
-    pub fn set_log_sender(&mut self, log_sender: Sender<String>) {
-        self.log_sender = Some(log_sender);
-    }
+    //pub fn set_log_sender(&mut self, log_sender: Sender<String>) {
+    //    self.log_sender = Some(log_sender);
+    //}
 
     pub fn append_log(&mut self, log: String) {
         self.logs.push(log);

@@ -1,6 +1,6 @@
 use iced::{
     widget::{button, column, container, row, text},
-    Element,
+    Element, Length, Padding,
 };
 
 use crate::{icons::ICONS, message::Message, service::Service, styles, workspace::Project};
@@ -29,9 +29,9 @@ impl ProjectItem {
     ) -> Element<Message> {
         let mut c = column![];
         let toggle_mark = if self.open {
-            ICONS.chevron_down(12.0, iced::Length::Fixed(32.0), iced::Length::Fixed(32.0))
+            ICONS.chevron_down(12.0, Length::Fixed(16.0), Length::Fixed(16.0))
         } else {
-            ICONS.chevron_right(12.0, iced::Length::Fixed(32.0), iced::Length::Fixed(32.0))
+            ICONS.chevron_right(12.0, Length::Fixed(16.0), Length::Fixed(16.0))
         };
         let is_selected_project = selected_project
             .clone()
@@ -44,7 +44,7 @@ impl ProjectItem {
         };
 
         c = c.push(
-            button(row![toggle_mark, text(&self.project.name)])
+            button(row![toggle_mark, text(&self.project.name)].width(Length::Fill))
                 .on_press(Message::ProjectSelected(self.index, self.project.clone()))
                 .style(project_style),
         );
@@ -57,21 +57,26 @@ impl ProjectItem {
                 } else {
                     styles::service
                 };
-                c = c.push(
+                c = c.push(row![
+                    text(" ")
+                        .width(Length::Fixed(16.0))
+                        .height(Length::Fixed(16.0)),
                     button(text(format!("  {}", service)))
                         .on_press(Message::ProjectServiceSelected(
                             self.index,
                             self.project.clone(),
                             service.clone(),
                         ))
+                        .width(Length::Fill)
                         .style(service_style),
-                );
+                ]);
             }
         }
 
         container(c)
-            .width(iced::Length::Fill)
-            .height(iced::Length::Fill)
+            .padding(Padding::from(2.0))
+            .width(Length::Fill)
+            .height(Length::Fill)
             .into()
     }
 }

@@ -7,7 +7,7 @@ mod fonts;
 mod footer;
 mod icons;
 mod linear;
-mod log_receiver;
+//mod log_receiver;
 mod main_tab;
 mod message;
 mod pane_type;
@@ -36,6 +36,6 @@ fn main() -> iced::Result {
             antialiasing: true,
             ..iced::Settings::default()
         })
-        .subscription(AwsomeApp::subscription)
+        //.subscription(AwsomeApp::subscription)
         .run_with(AwsomeApp::new)
 }

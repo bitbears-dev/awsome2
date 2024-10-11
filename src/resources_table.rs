@@ -1,6 +1,6 @@
 use iced::{
     widget::{
-        container,
+        container, mouse_area,
         scrollable::{self, AbsoluteOffset},
         text,
     },
@@ -8,14 +8,18 @@ use iced::{
 };
 use iced_table::table;
 
-use crate::{message::Message, service::Service, workspace::Project};
+use crate::{
+    message::Message,
+    service::Service,
+    workspace::{Project, ResourceDescriptor},
+};
 
 pub struct ResourcesTable {
     header_id: iced::widget::scrollable::Id,
     body_id: iced::widget::scrollable::Id,
     footer_id: iced::widget::scrollable::Id,
     columns: Vec<Column>,
-    rows: Vec<Row>,
+    rows: Vec<ResourceDescriptor>,
 }
 
 impl ResourcesTable {
@@ -53,10 +57,11 @@ impl ResourcesTable {
             .iter()
             .filter_map(|r| {
                 if r.service == service {
-                    Some(Row {
+                    Some(ResourceDescriptor {
                         profile: r.profile.clone(),
                         region: r.region.clone(),
-                        name: r.get_display_name(),
+                        service: r.service.clone(),
+                        id: r.get_display_name(),
                     })
                 } else {
                     None
@@ -72,6 +77,20 @@ impl ResourcesTable {
         ])
     }
 
+    pub fn set_column_resize_offset(&mut self, index: usize, offset: f32) {
+        if let Some(column) = self.columns.get_mut(index) {
+            column.resize_offset = Some(offset);
+        }
+    }
+
+    pub fn confirm_column_resizing(&mut self) {
+        for column in &mut self.columns {
+            if let Some(offset) = column.resize_offset.take() {
+                column.width += offset;
+            }
+        }
+    }
+
     pub fn view(&self) -> Element<Message> {
         table(
             self.header_id.clone(),
@@ -79,6 +98,10 @@ impl ResourcesTable {
             &self.columns,
             &self.rows,
             Message::SyncResourcesTableHeader,
+        )
+        .on_column_resize(
+            Message::ResourcesTableColumnResizing,
+            Message::ResourcesTableColumnResized,
         )
         .into()
     }
@@ -95,7 +118,7 @@ impl Column {
         let width = match kind {
             ColumnKind::Name => 320.0,
             ColumnKind::Profile => 120.0,
-            ColumnKind::Region => 180.0,
+            ColumnKind::Region => 150.0,
         };
         Self {
             kind,
@@ -112,7 +135,7 @@ enum ColumnKind {
 }
 
 impl<'a> iced_table::table::Column<'a, Message, Theme, Renderer> for Column {
-    type Row = Row;
+    type Row = ResourceDescriptor;
 
     fn header(&'a self, _col_index: usize) -> Element<'a, Message> {
         let content = match self.kind {
@@ -124,16 +147,33 @@ impl<'a> iced_table::table::Column<'a, Message, Theme, Renderer> for Column {
         container(text(content)).center_y(24).into()
     }
 
-    fn cell(&'a self, _col_index: usize, _row_index: usize, row: &'a Row) -> Element<'a, Message> {
+    fn cell(
+        &'a self,
+        col_index: usize,
+        row_index: usize,
+        row: &'a ResourceDescriptor,
+    ) -> Element<'a, Message> {
         let content = match self.kind {
-            ColumnKind::Name => text(row.name.clone()),
+            ColumnKind::Name => text(row.id.clone()),
             ColumnKind::Profile => text(row.profile.clone()),
             ColumnKind::Region => text(row.region.clone()),
         };
-        container(content).center_y(24).into()
+        container(
+            mouse_area(content).on_press(Message::ResourcesTableCellClicked(
+                col_index,
+                row_index,
+                row.clone(),
+            )),
+        )
+        .center_y(24)
+        .into()
     }
 
-    fn footer(&'a self, _col_index: usize, _rows: &'a [Row]) -> Option<Element<'a, Message>> {
+    fn footer(
+        &'a self,
+        _col_index: usize,
+        _rows: &'a [ResourceDescriptor],
+    ) -> Option<Element<'a, Message>> {
         Some(container(text("")).center_y(24).into())
     }
 
@@ -144,10 +184,4 @@ impl<'a> iced_table::table::Column<'a, Message, Theme, Renderer> for Column {
     fn resize_offset(&self) -> Option<f32> {
         self.resize_offset
     }
-}
-
-struct Row {
-    name: String,
-    profile: String,
-    region: String,
 }

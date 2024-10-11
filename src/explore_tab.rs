@@ -132,7 +132,7 @@ impl ExploreTab {
     }
 
     pub fn set_selected_resource(&mut self, resource: Resource) {
-        self.resource_details.set_selected_resource(Some(resource));
+        self.resource_details.set_resource(Some(resource));
     }
 
     pub fn resize_pane(&mut self, event: iced::widget::pane_grid::ResizeEvent) {

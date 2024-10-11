@@ -1,15 +1,73 @@
+use aws_config::{BehaviorVersion, Region};
 use iced::{
     widget::{checkbox, column, row, text, text_input},
     Element, Length,
 };
 
-use crate::{message::Message, resource::LambdaFunctionInfo};
+use crate::{
+    error::Error,
+    message::Message,
+    resource::{LambdaFunctionInfo, Resource},
+    service::Service,
+    workspace::ResourceDescriptor,
+};
 
 pub struct LambdaFunctionDetails {}
 
 impl LambdaFunctionDetails {
     pub fn new() -> Self {
         Self {}
+    }
+
+    pub async fn load(rd: &ResourceDescriptor) -> Result<Resource, Error> {
+        match rd.service {
+            Service::Lambda => {
+                let cfg = aws_config::defaults(BehaviorVersion::v2024_03_28())
+                    .profile_name(rd.profile.clone())
+                    .region(Region::new(rd.region.to_string()))
+                    .load()
+                    .await;
+
+                let client = aws_sdk_lambda::Client::new(&cfg);
+                let out = client
+                    .get_function()
+                    .function_name(rd.id.clone())
+                    .send()
+                    .await?;
+
+                let Some(function_config) = out.configuration else {
+                    return Err(Error::ResourceNotFound);
+                };
+                Ok(Resource::LambdaFunction(Box::new(LambdaFunctionInfo(
+                    function_config,
+                ))))
+            }
+            _ => Err(Error::InvalidResourceDescriptor),
+        }
+    }
+
+    pub async fn list(profile: String, region: String) -> Result<Vec<Resource>, Error> {
+        let cfg = aws_config::defaults(BehaviorVersion::v2024_03_28())
+            .profile_name(profile)
+            .region(Region::new(region.to_string()))
+            .load()
+            .await;
+
+        let client = aws_sdk_lambda::Client::new(&cfg);
+        let result: Result<Vec<_>, _> = client
+            .list_functions()
+            .into_paginator()
+            .items()
+            .send()
+            .collect()
+            .await;
+
+        let mut functions = result?;
+        functions.sort_by_key(|f| f.function_name.clone());
+        Ok(functions
+            .into_iter()
+            .map(|f| Resource::LambdaFunction(Box::new(LambdaFunctionInfo(f))))
+            .collect())
     }
 
     pub fn render(&self, f: &LambdaFunctionInfo) -> iced::Element<Message> {

@@ -1,0 +1,14 @@
+path: /home/ogu/.config/awsome/workspaces/default.yaml
+projects:
+- name: aws-resources-checkers
+  resources:
+  - profile: soracom-dev
+    region: ap-northeast-1
+    service: Lambda
+    id: aws-resources-checkers-ACMChecker
+appearance:
+  selected_resource:
+    profile: soracom-dev
+    region: ap-northeast-1
+    service: Lambda
+    id: aws-resources-checkers-ACMChecker

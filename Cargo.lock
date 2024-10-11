@@ -798,6 +798,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_yaml",
+ "tracing",
 ]
 
 [[package]]

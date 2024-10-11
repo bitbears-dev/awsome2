@@ -1,7 +1,13 @@
-use aws_config::{BehaviorVersion, Region};
 use lazy_static::lazy_static;
 
-use crate::{error::Error, service::Service};
+use crate::{
+    error::Error,
+    resource_details::{
+        lambda_function_details::LambdaFunctionDetails, s3_bucket_details::S3BucketDetails,
+    },
+    service::Service,
+    workspace::ResourceDescriptor,
+};
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum Resource {
@@ -9,6 +15,14 @@ pub enum Resource {
     S3Bucket(BucketInfo),
 }
 
+impl Resource {
+    pub async fn load(resource_descriptor: ResourceDescriptor) -> Result<Self, Error> {
+        match resource_descriptor.service {
+            Service::Lambda => LambdaFunctionDetails::load(&resource_descriptor).await,
+            Service::S3 => S3BucketDetails::load(&resource_descriptor).await,
+        }
+    }
+}
 #[derive(Clone, Debug, PartialEq)]
 pub struct LambdaFunctionInfo(pub aws_sdk_lambda::types::FunctionConfiguration);
 
@@ -46,56 +60,17 @@ impl std::fmt::Display for Resource {
     }
 }
 
-pub async fn load_resources(
+pub async fn load_resource(resource_descriptor: ResourceDescriptor) -> Result<Resource, Error> {
+    Resource::load(resource_descriptor).await
+}
+
+pub async fn list_resources(
     profile: String,
     region: String,
     service: &Service,
 ) -> Result<Vec<Resource>, Error> {
     match service {
-        Service::Lambda => load_lambda_functions(profile, region).await,
-        Service::S3 => load_s3_buckets(profile, region).await,
+        Service::Lambda => LambdaFunctionDetails::list(profile, region).await,
+        Service::S3 => S3BucketDetails::list(profile, region).await,
     }
-}
-
-async fn load_lambda_functions(profile: String, region: String) -> Result<Vec<Resource>, Error> {
-    let cfg = aws_config::defaults(BehaviorVersion::v2024_03_28())
-        .profile_name(profile)
-        .region(Region::new(region.to_string()))
-        .load()
-        .await;
-
-    let client = aws_sdk_lambda::Client::new(&cfg);
-    let result: Result<Vec<_>, _> = client
-        .list_functions()
-        .into_paginator()
-        .items()
-        .send()
-        .collect()
-        .await;
-
-    let mut functions = result?;
-    functions.sort_by_key(|f| f.function_name.clone());
-    Ok(functions
-        .into_iter()
-        .map(|f| Resource::LambdaFunction(Box::new(LambdaFunctionInfo(f))))
-        .collect())
-}
-
-async fn load_s3_buckets(profile: String, region: String) -> Result<Vec<Resource>, Error> {
-    let cfg = aws_config::defaults(BehaviorVersion::v2024_03_28())
-        .profile_name(profile)
-        .region(Region::new(region.to_string()))
-        .load()
-        .await;
-
-    let client = aws_sdk_s3::Client::new(&cfg);
-    let out = client.list_buckets().send().await?;
-
-    let mut buckets = out.buckets().to_owned();
-    buckets.sort_by_key(|b| b.name.clone());
-
-    Ok(buckets
-        .into_iter()
-        .map(|b| Resource::S3Bucket(BucketInfo(b)))
-        .collect())
 }
