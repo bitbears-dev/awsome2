@@ -1,4 +1,5 @@
 use iced::{
+    padding,
     widget::{button, column, container, row, text, Space},
     Element, Theme,
 };
@@ -27,7 +28,8 @@ impl MainTab {
         let r = row![
             self.render_side_drawer(state),
             self.render_main_tab_pane(state)
-        ];
+        ]
+        .padding(padding::top(4));
 
         let c = column![self.render_header(state), r, self.footer.view(state)];
 
@@ -37,13 +39,16 @@ impl MainTab {
     }
 
     fn render_header(&self, state: &State) -> Element<Message> {
-        row![
-            self.render_menu_button(),
-            self.render_spacer(),
-            self.render_current_active_pane_name(state)
-        ]
-        .width(iced::Length::Fill)
-        .height(iced::Length::Shrink)
+        container(
+            row![
+                self.render_menu_button(),
+                self.render_spacer(),
+                self.render_current_active_pane_name(state)
+            ]
+            .width(iced::Length::Fill)
+            .height(iced::Length::Shrink),
+        )
+        .style(styles::header)
         .into()
     }
 
@@ -57,6 +62,7 @@ impl MainTab {
         button(icon)
             .width(iced::Length::Shrink)
             .height(iced::Length::Shrink)
+            .style(styles::menu_button)
             .on_press(Message::SideDrawerToggled)
             .into()
     }
@@ -144,9 +150,11 @@ impl MainTab {
     }
 
     fn render_main_tab_pane<'a>(&'a self, state: &'a State) -> Element<'a, Message> {
-        match state.get_active_pane() {
+        container(match state.get_active_pane() {
             PaneType::Explore => self.explore_tab.view(),
             PaneType::Projects => self.projects_tab.view(),
-        }
+        })
+        .padding(padding::left(4))
+        .into()
     }
 }

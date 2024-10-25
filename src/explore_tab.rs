@@ -4,7 +4,7 @@ use iced::{
     widget::{
         column, container,
         pane_grid::{self, PaneGrid},
-        pick_list, text,
+        pick_list,
     },
     Element, Length,
 };
@@ -141,11 +141,7 @@ impl ExploreTab {
 
     pub fn view(&self) -> Element<Message> {
         let pane_grid = PaneGrid::new(&self.panes, |_pane_number, pane, _is_maximized| {
-            let title_bar = pane_grid::TitleBar::new(text(pane.id.to_string()));
-
-            pane_grid::Content::new(self.view_content(pane))
-                .title_bar(title_bar)
-                .style(styles::pane_active)
+            pane_grid::Content::new(self.view_content(pane)).style(styles::pane_active)
         })
         .on_resize(10, Message::ExploreTabPaneResized)
         .width(Length::Fill)
@@ -172,6 +168,7 @@ impl ExploreTab {
             self.selected_profile.clone(),
             Message::ProfileSelected,
         )
+        .placeholder("Profile")
         .width(Length::Fill);
         let mut c = column![profile_selector]
             .width(iced::Length::Fill)
@@ -183,6 +180,7 @@ impl ExploreTab {
                 self.selected_region.clone(),
                 Message::RegionSelected,
             )
+            .placeholder("Region")
             .width(Length::Fill);
             c = c.push(region_selector);
         }
@@ -197,6 +195,7 @@ impl ExploreTab {
                 None,
                 get_default_font(),
             )
+            .style(styles::service_selection_list)
             .width(Length::Fill)
             .height(Length::Fill);
             c = c.push(service_selector);
@@ -227,6 +226,7 @@ impl ExploreTab {
             None,
             get_default_font(),
         )
+        .style(styles::resource_selection_list)
         .width(Length::Fill)
         .height(Length::Fill);
 

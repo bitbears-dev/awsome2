@@ -40,7 +40,7 @@ impl ResourceDetails {
                     return self.s3_bucket_details.render(b);
                 }
             },
-            None => container(text("No resource selected").size(24)).into(),
+            None => container(text("No resource selected")).into(),
         }
     }
 }
