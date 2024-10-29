@@ -1,8 +1,10 @@
 use crate::{
     error::Error,
-    resource::Resource,
+    models::{
+        resource::Resource,
+        workspace::{Project, ResourceDescriptor, Workspace},
+    },
     service::Service,
-    workspace::{Project, ResourceDescriptor, Workspace},
 };
 
 #[derive(Debug, Clone)]
@@ -30,6 +32,8 @@ pub enum Message {
     ResourcesTableColumnResized,
     ResourcesTableCellClicked(usize, usize, ResourceDescriptor),
     ResourceDetailsLoaded(Resource),
+
+    AddProject,
 
     ErrorOccurred(Error),
 

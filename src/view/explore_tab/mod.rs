@@ -11,8 +11,8 @@ use iced::{
 use iced_aw::SelectionList;
 
 use crate::{
-    easing, fonts::get_default_font, linear::Linear, message::Message, profile::load_profile_names,
-    resource::Resource, resource_details::ResourceDetails, service::Service, styles,
+    message::Message, models::{profile::load_profile_names, resource::Resource}, service::Service,
+    view::{easing, fonts::get_default_font, linear::Linear, resource_details::ResourceDetails, styles},
 };
 
 #[derive(Clone, Debug)]

@@ -2,10 +2,11 @@ use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{service::Service, workspace::resource_descriptor::ResourceDescriptor};
+use crate::{models::workspace::resource_descriptor::ResourceDescriptor, service::Service};
 
 #[derive(Debug, Clone, Default, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct Project {
+    id: String,
     pub name: String,
     pub resources: Vec<ResourceDescriptor>,
 }
@@ -17,6 +18,14 @@ impl std::fmt::Display for Project {
 }
 
 impl Project {
+    pub fn new(name: &str) -> Self {
+        Self {
+            id: ulid::Ulid::new().to_string(),
+            name: name.to_string(),
+            resources: vec![],
+        }
+    }
+
     pub fn get_services(&self) -> Vec<Service> {
         self.resources
             .iter()

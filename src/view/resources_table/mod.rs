@@ -10,8 +10,8 @@ use iced_table::table;
 
 use crate::{
     message::Message,
+    models::workspace::{Project, ResourceDescriptor},
     service::Service,
-    workspace::{Project, ResourceDescriptor},
 };
 
 pub struct ResourcesTable {

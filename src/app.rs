@@ -7,13 +7,14 @@ use iced::{
 };
 
 use crate::{
-    main_tab::MainTab,
     message::Message,
-    pane_type::PaneType,
-    region::load_region_names,
-    resource::{list_resources, load_resource},
+    models::{
+        region::load_region_names,
+        resource::{list_resources, load_resource},
+        workspace::{Project, Workspace},
+    },
     state::State,
-    workspace::Workspace,
+    view::{main_tab::MainTab, pane_type::PaneType},
 };
 
 #[derive(Default, Parser)]
@@ -239,7 +240,10 @@ impl AwsomeApp {
                 let Some(ref mut state) = &mut self.state else {
                     return Task::none();
                 };
-                state.workspace.set_selected_resource(Some(res.clone()));
+                if let Err(e) = state.workspace.set_selected_resource(Some(res.clone())) {
+                    eprintln!("Error while setting selected resource: {:?}", e);
+                    return Task::done(Message::ErrorOccurred(e));
+                }
                 Task::perform(load_resource(res), |res| match res {
                     Ok(details) => Message::ResourceDetailsLoaded(details),
                     Err(e) => {
@@ -255,6 +259,22 @@ impl AwsomeApp {
                     .set_resource(Some(details));
                 Task::none()
             }
+
+            Message::AddProject => {
+                let Some(state) = &mut self.state else {
+                    return Task::none();
+                };
+                let new_project = Project::new("New Project");
+                if let Err(e) = state.workspace.add_project(new_project) {
+                    eprintln!("Error while adding project: {:?}", e);
+                    return Task::done(Message::ErrorOccurred(e));
+                }
+                self.main_tab
+                    .projects_tab
+                    .set_projects(state.workspace.projects.clone());
+                Task::none()
+            }
+
             Message::ErrorOccurred(e) => {
                 let Some(state) = &mut self.state else {
                     return Task::none();

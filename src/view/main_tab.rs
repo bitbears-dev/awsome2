@@ -1,12 +1,16 @@
 use iced::{
     padding,
     widget::{button, column, container, row, text, Space},
-    Element, Theme,
+    Element, Length, Theme,
 };
 
 use crate::{
-    bootstrap_text::bootstrap_text, explore_tab::ExploreTab, footer::Footer, message::Message,
-    pane_type::PaneType, projects_tab::ProjectsTab, state::State, styles,
+    message::Message,
+    state::State,
+    view::{
+        explore_tab::ExploreTab, footer::Footer, icons::ICONS, pane_type::PaneType,
+        projects_tab::ProjectsTab, styles,
+    },
 };
 
 pub struct MainTab {
@@ -45,23 +49,18 @@ impl MainTab {
                 self.render_spacer(),
                 self.render_current_active_pane_name(state)
             ]
-            .width(iced::Length::Fill)
-            .height(iced::Length::Shrink),
+            .width(Length::Fill)
+            .height(Length::Shrink),
         )
         .style(styles::header)
         .into()
     }
 
     fn render_menu_button(&self) -> Element<Message> {
-        let icon = bootstrap_text(
-            "\u{F479}",
-            24.0,
-            iced::Length::Fixed(32.0),
-            iced::Length::Fixed(32.0),
-        );
+        let icon = ICONS.list(24.0, Length::Fixed(32.0), Length::Fixed(32.0));
         button(icon)
-            .width(iced::Length::Shrink)
-            .height(iced::Length::Shrink)
+            .width(Length::Shrink)
+            .height(Length::Shrink)
             .style(styles::menu_button)
             .on_press(Message::SideDrawerToggled)
             .into()
@@ -77,7 +76,7 @@ impl MainTab {
             PaneType::Projects => "Projects",
         })
         .align_y(iced::alignment::Vertical::Bottom)
-        .height(iced::Length::Fixed(32.0))
+        .height(Length::Fixed(32.0))
         .into()
     }
 
@@ -87,7 +86,7 @@ impl MainTab {
             self.render_projects_button(state)
         ])
         .width(state.get_side_drawer_width())
-        .height(iced::Length::Fill)
+        .height(Length::Fill)
         .style(|theme: &Theme| {
             let palette = theme.extended_palette();
             container::Style::default().background(palette.background.weak.color)
@@ -96,12 +95,7 @@ impl MainTab {
     }
 
     fn render_explore_button(&self, state: &State) -> Element<Message> {
-        let icon = bootstrap_text(
-            "\u{F2D1}",
-            24.0,
-            iced::Length::Fixed(32.0),
-            iced::Length::Fixed(32.0),
-        );
+        let icon = ICONS.compass(24.0, Length::Fixed(32.0), Length::Fixed(32.0));
         let button_content = match state.is_side_drawer_open() {
             true => row![
                 icon,
@@ -123,12 +117,7 @@ impl MainTab {
     }
 
     fn render_projects_button(&self, state: &State) -> Element<Message> {
-        let icon = bootstrap_text(
-            "\u{F477}",
-            24.0,
-            iced::Length::Fixed(32.0),
-            iced::Length::Fixed(32.0),
-        );
+        let icon = ICONS.list(24.0, Length::Fixed(32.0), Length::Fixed(32.0));
         let button_content = match state.is_side_drawer_open() {
             true => row![
                 icon,

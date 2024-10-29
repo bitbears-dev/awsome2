@@ -1,9 +1,15 @@
 use iced::{
+    alignment,
     widget::{button, column, container, row, text},
     Element, Length, Padding,
 };
 
-use crate::{icons::ICONS, message::Message, service::Service, styles, workspace::Project};
+use crate::{
+    message::Message,
+    models::workspace::Project,
+    service::Service,
+    view::{icons::ICONS, styles},
+};
 
 struct ProjectItem {
     index: usize,
@@ -27,7 +33,7 @@ impl ProjectItem {
         selected_project: &Option<Project>,
         selected_service: &Option<Service>,
     ) -> Element<Message> {
-        let mut c = column![];
+        let mut c = column![].height(Length::Shrink);
         let toggle_mark = if self.open {
             ICONS.chevron_down(12.0, Length::Fixed(16.0), Length::Fixed(16.0))
         } else {
@@ -44,9 +50,13 @@ impl ProjectItem {
         };
 
         c = c.push(
-            button(row![toggle_mark, text(&self.project.name)].width(Length::Fill))
-                .on_press(Message::ProjectSelected(self.index, self.project.clone()))
-                .style(project_style),
+            button(
+                row![toggle_mark, text(&self.project.name)]
+                    .width(Length::Fill)
+                    .align_y(alignment::Alignment::Center),
+            )
+            .on_press(Message::ProjectSelected(self.index, self.project.clone()))
+            .style(project_style),
         );
         if self.open {
             for service in self.project.get_services().iter() {
@@ -57,26 +67,29 @@ impl ProjectItem {
                 } else {
                     styles::service
                 };
-                c = c.push(row![
-                    text(" ")
-                        .width(Length::Fixed(16.0))
-                        .height(Length::Fixed(16.0)),
-                    button(text(format!("  {}", service)))
-                        .on_press(Message::ProjectServiceSelected(
-                            self.index,
-                            self.project.clone(),
-                            service.clone(),
-                        ))
-                        .width(Length::Fill)
-                        .style(service_style),
-                ]);
+                c = c.push(
+                    row![
+                        text(" ")
+                            .width(Length::Fixed(16.0))
+                            .height(Length::Fixed(16.0)),
+                        button(text(format!("  {}", service)))
+                            .on_press(Message::ProjectServiceSelected(
+                                self.index,
+                                self.project.clone(),
+                                service.clone(),
+                            ))
+                            .width(Length::Fill)
+                            .style(service_style),
+                    ]
+                    .height(Length::Shrink),
+                );
             }
         }
 
         container(c)
             .padding(Padding::from(2.0))
             .width(Length::Fill)
-            .height(Length::Fill)
+            .height(Length::Shrink)
             .into()
     }
 }
@@ -127,15 +140,31 @@ impl ProjectServiceSelector {
     }
 
     pub fn view(&self) -> Element<Message> {
-        let mut c = column![];
+        let buttons = self.render_buttons();
+        let mut c = column![buttons];
 
         for p in self.project_items.iter() {
             c = c.push(p.view(&self.selected_project, &self.selected_service));
         }
 
         container(c)
+            .width(Length::Fill)
+            .height(Length::Shrink)
+            .into()
+    }
+
+    pub fn render_buttons(&self) -> Element<Message> {
+        let project_add_icon = ICONS.folder_plus(10.0, Length::Fixed(16.0), Length::Fixed(16.0));
+        let project_add_button = button(project_add_icon)
+            .on_press(Message::AddProject)
+            .style(styles::tool_button)
+            .width(iced::Length::Shrink);
+
+        let buttons = row![project_add_button,];
+
+        container(buttons)
             .width(iced::Length::Fill)
-            .height(iced::Length::Fill)
+            .height(iced::Length::Shrink)
             .into()
     }
 }

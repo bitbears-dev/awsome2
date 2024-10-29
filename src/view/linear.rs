@@ -14,7 +14,7 @@ use iced::{
     Background, Color, Element, Event, Length, Rectangle, Size,
 };
 
-use crate::easing::{self, Easing};
+use crate::view::easing::{self, Easing};
 
 pub struct Linear<'a, Theme>
 where

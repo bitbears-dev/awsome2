@@ -3,6 +3,8 @@ use iced::{
     Font,
 };
 
+// Gallery: https://icons.getbootstrap.com/
+
 pub fn bootstrap_text(t: &str, size: f32, width: iced::Length, height: iced::Length) -> Text {
     text(t)
         .font(Font::with_name("bootstrap-icons"))

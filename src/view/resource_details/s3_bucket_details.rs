@@ -7,8 +7,10 @@ use iced::{
 use crate::{
     error::Error,
     message::Message,
-    resource::{BucketInfo, Resource},
-    workspace::ResourceDescriptor,
+    models::{
+        resource::{BucketInfo, Resource},
+        workspace::ResourceDescriptor,
+    },
 };
 
 pub struct S3BucketDetails {}

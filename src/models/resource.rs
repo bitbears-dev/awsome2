@@ -2,11 +2,11 @@ use lazy_static::lazy_static;
 
 use crate::{
     error::Error,
-    resource_details::{
+    models::workspace::ResourceDescriptor,
+    service::Service,
+    view::resource_details::{
         lambda_function_details::LambdaFunctionDetails, s3_bucket_details::S3BucketDetails,
     },
-    service::Service,
-    workspace::ResourceDescriptor,
 };
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]

@@ -1,11 +1,17 @@
+mod project_service_selector;
+
 use iced::{
-    widget::{container, pane_grid, scrollable::AbsoluteOffset, text, PaneGrid},
+    widget::{container, pane_grid, scrollable::AbsoluteOffset, PaneGrid},
     Element, Length, Task,
 };
 
 use crate::{
-    message::Message, project_service_selector::ProjectServiceSelector,
-    resource_details::ResourceDetails, resources_table::ResourcesTable, styles, workspace::Project,
+    message::Message,
+    models::workspace::Project,
+    view::{
+        projects_tab::project_service_selector::ProjectServiceSelector,
+        resource_details::ResourceDetails, resources_table::ResourcesTable, styles,
+    },
 };
 
 #[derive(Clone, Debug)]
@@ -85,11 +91,7 @@ impl ProjectsTab {
 
     pub fn view(&self) -> Element<Message> {
         let pane_grid = PaneGrid::new(&self.panes, |_pane_number, pane, _is_maximized| {
-            let title_bar = pane_grid::TitleBar::new(text(pane.id.to_string()));
-
-            pane_grid::Content::new(self.view_content(pane))
-                .title_bar(title_bar)
-                .style(styles::pane_active)
+            pane_grid::Content::new(self.view_content(pane)).style(styles::pane_active)
         })
         .on_resize(10, Message::ExploreTabPaneResized)
         .width(Length::Fill)

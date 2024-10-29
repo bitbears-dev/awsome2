@@ -1,4 +1,4 @@
-use crate::{error::Error, pane_type::PaneType, workspace::Workspace};
+use crate::{error::Error, models::workspace::Workspace, view::pane_type::PaneType};
 
 #[derive(Clone, Debug)]
 pub struct State {

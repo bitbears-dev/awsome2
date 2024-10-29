@@ -2,7 +2,7 @@ mod appearance;
 pub mod project;
 pub mod resource_descriptor;
 
-use crate::workspace::appearance::Appearance;
+use crate::models::workspace::appearance::Appearance;
 pub use project::Project;
 pub use resource_descriptor::ResourceDescriptor;
 
@@ -39,13 +39,25 @@ impl Workspace {
         Ok(workspace)
     }
 
-    pub fn set_selected_resource(&mut self, resource: Option<ResourceDescriptor>) {
+    pub fn set_selected_resource(
+        &mut self,
+        resource: Option<ResourceDescriptor>,
+    ) -> Result<(), Error> {
         self.appearance.selected_resource = resource;
-        self.save();
+        self.save()?;
+        Ok(())
     }
 
-    pub fn save(&self) {
-        let f = File::create("workspace.yaml").unwrap();
-        serde_yaml::to_writer(f, self).unwrap();
+    pub fn add_project(&mut self, project: Project) -> Result<(), Error> {
+        self.projects.push(project);
+        self.save()?;
+        Ok(())
+    }
+
+    pub fn save(&self) -> Result<(), Error> {
+        let path = self.path.clone().unwrap_or(PathBuf::from("workspace.yaml"));
+        let f = File::create(path)?;
+        serde_yaml::to_writer(f, self)?;
+        Ok(())
     }
 }

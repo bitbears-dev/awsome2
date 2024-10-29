@@ -7,11 +7,11 @@ use iced::{
 
 use crate::{
     error::Error,
-    fonts,
     message::Message,
-    resource::{LambdaFunctionInfo, Resource},
+    models::resource::{LambdaFunctionInfo, Resource},
+    models::workspace::ResourceDescriptor,
     service::Service,
-    workspace::ResourceDescriptor,
+    view::fonts,
 };
 
 pub struct LambdaFunctionDetails {}

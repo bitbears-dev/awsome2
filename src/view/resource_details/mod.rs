@@ -6,7 +6,7 @@ use iced::{
     Element,
 };
 
-use crate::{message::Message, resource::Resource};
+use crate::{message::Message, models::resource::Resource};
 
 use lambda_function_details::LambdaFunctionDetails;
 use s3_bucket_details::S3BucketDetails;
