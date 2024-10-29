@@ -6,8 +6,7 @@ use iced::{
 
 use crate::{
     message::Message,
-    models::workspace::Project,
-    service::Service,
+    models::{service::Service, workspace::Project},
     view::{icons::ICONS, styles},
 };
 

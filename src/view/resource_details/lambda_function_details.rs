@@ -8,9 +8,11 @@ use iced::{
 use crate::{
     error::Error,
     message::Message,
-    models::resource::{LambdaFunctionInfo, Resource},
-    models::workspace::ResourceDescriptor,
-    service::Service,
+    models::{
+        resource::{LambdaFunctionInfo, Resource},
+        service::Service,
+        workspace::ResourceDescriptor,
+    },
     view::fonts,
 };
 

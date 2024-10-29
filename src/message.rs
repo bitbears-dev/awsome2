@@ -2,9 +2,9 @@ use crate::{
     error::Error,
     models::{
         resource::Resource,
+        service::Service,
         workspace::{Project, ResourceDescriptor, Workspace},
     },
-    service::Service,
 };
 
 #[derive(Debug, Clone)]

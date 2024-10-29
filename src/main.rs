@@ -3,7 +3,6 @@ mod error;
 //mod log_receiver;
 mod message;
 mod models;
-mod service;
 mod state;
 mod view;
 

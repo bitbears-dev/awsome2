@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::service::Service;
+use crate::models::service::Service;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct ResourceDescriptor {

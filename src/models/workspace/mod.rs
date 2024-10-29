@@ -2,7 +2,6 @@ mod appearance;
 pub mod project;
 pub mod resource_descriptor;
 
-use crate::models::workspace::appearance::Appearance;
 pub use project::Project;
 pub use resource_descriptor::ResourceDescriptor;
 
@@ -10,7 +9,7 @@ use std::{fs::File, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::Error;
+use crate::{error::Error, models::workspace::appearance::Appearance};
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct Workspace {

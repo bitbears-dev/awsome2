@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{models::workspace::resource_descriptor::ResourceDescriptor, service::Service};
+use crate::models::{service::Service, workspace::resource_descriptor::ResourceDescriptor};
 
 #[derive(Debug, Clone, Default, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct Project {
