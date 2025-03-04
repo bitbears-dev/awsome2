@@ -1,77 +1,16 @@
-use aws_config::{BehaviorVersion, Region};
 use iced::{
     alignment::{Horizontal, Vertical},
     widget::{column, row, scrollable, text, text_input},
     Element, Length,
 };
 
-use crate::{
-    error::Error,
-    message::Message,
-    models::{
-        resource::{LambdaFunctionInfo, Resource},
-        service::Service,
-        workspace::ResourceDescriptor,
-    },
-    view::fonts,
-};
+use crate::{message::Message, models::resource::LambdaFunctionInfo, view::fonts};
 
 pub struct LambdaFunctionDetails {}
 
 impl LambdaFunctionDetails {
     pub fn new() -> Self {
         Self {}
-    }
-
-    pub async fn load(rd: &ResourceDescriptor) -> Result<Resource, Error> {
-        match rd.service {
-            Service::Lambda => {
-                let cfg = aws_config::defaults(BehaviorVersion::v2024_03_28())
-                    .profile_name(rd.profile.clone())
-                    .region(Region::new(rd.region.to_string()))
-                    .load()
-                    .await;
-
-                let client = aws_sdk_lambda::Client::new(&cfg);
-                let out = client
-                    .get_function()
-                    .function_name(rd.id.clone())
-                    .send()
-                    .await?;
-
-                let Some(function_config) = out.configuration else {
-                    return Err(Error::ResourceNotFound);
-                };
-                Ok(Resource::LambdaFunction(Box::new(LambdaFunctionInfo(
-                    function_config,
-                ))))
-            }
-            _ => Err(Error::InvalidResourceDescriptor),
-        }
-    }
-
-    pub async fn list(profile: String, region: String) -> Result<Vec<Resource>, Error> {
-        let cfg = aws_config::defaults(BehaviorVersion::v2024_03_28())
-            .profile_name(profile)
-            .region(Region::new(region.to_string()))
-            .load()
-            .await;
-
-        let client = aws_sdk_lambda::Client::new(&cfg);
-        let result: Result<Vec<_>, _> = client
-            .list_functions()
-            .into_paginator()
-            .items()
-            .send()
-            .collect()
-            .await;
-
-        let mut functions = result?;
-        functions.sort_by_key(|f| f.function_name.clone());
-        Ok(functions
-            .into_iter()
-            .map(|f| Resource::LambdaFunction(Box::new(LambdaFunctionInfo(f))))
-            .collect())
     }
 
     pub fn render(&self, f: &LambdaFunctionInfo) -> iced::Element<Message> {
@@ -218,7 +157,7 @@ impl LambdaFunctionDetails {
     fn string_prop(&self, label: &str, value: &Option<String>) -> Element<Message> {
         let value = match value {
             Some(v) => text_input("", v).width(Length::Fill).on_input(do_nothing),
-            None => text_input("-", ""),
+            None => text_input("-", "").font(fonts::get_default_font()).size(12),
         };
 
         column![self.render_label(label), value].into()
@@ -231,7 +170,9 @@ impl LambdaFunctionDetails {
         unit: Option<&str>,
     ) -> Element<Message> {
         let value = match value {
-            Some(v) => text_input("", &v.to_string()).on_input(do_nothing),
+            Some(v) => text_input("", &v.to_string())
+                .on_input(do_nothing)
+                .align_x(Horizontal::Right),
             None => text_input("", "-"),
         };
 

@@ -10,7 +10,7 @@ use crate::{
     message::Message,
     models::{
         region::load_region_names,
-        resource::{list_resources, load_resource},
+        resource::{list_resources, Resource},
         workspace::{Project, Workspace},
     },
     state::State,
@@ -244,7 +244,7 @@ impl AwsomeApp {
                     eprintln!("Error while setting selected resource: {:?}", e);
                     return Task::done(Message::ErrorOccurred(e));
                 }
-                Task::perform(load_resource(res), |res| match res {
+                Task::perform(Resource::load(res), |res| match res {
                     Ok(details) => Message::ResourceDetailsLoaded(details),
                     Err(e) => {
                         eprintln!("Error while loading resource details: {:?}", e);
@@ -265,13 +265,25 @@ impl AwsomeApp {
                     return Task::none();
                 };
                 let new_project = Project::new("New Project");
-                if let Err(e) = state.workspace.add_project(new_project) {
+                if let Err(e) = state.workspace.add_project(new_project.clone()) {
                     eprintln!("Error while adding project: {:?}", e);
                     return Task::done(Message::ErrorOccurred(e));
                 }
                 self.main_tab
                     .projects_tab
                     .set_projects(state.workspace.projects.clone());
+                self.main_tab
+                    .projects_tab
+                    .project_service_selector
+                    .set_selected_project(Some(new_project));
+                self.main_tab
+                    .projects_tab
+                    .resources_table
+                    .set_selected_project_and_service(None, None);
+                self.main_tab
+                    .projects_tab
+                    .resource_details
+                    .set_resource(None);
                 Task::none()
             }
 

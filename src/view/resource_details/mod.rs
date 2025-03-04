@@ -33,12 +33,8 @@ impl ResourceDetails {
     pub fn view(&self) -> Element<Message> {
         match &self.resource {
             Some(resource) => match resource {
-                Resource::LambdaFunction(f) => {
-                    return self.lambda_function_details.render(f);
-                }
-                Resource::S3Bucket(b) => {
-                    return self.s3_bucket_details.render(b);
-                }
+                Resource::LambdaFunction(f) => self.lambda_function_details.render(f),
+                Resource::S3Bucket(b) => self.s3_bucket_details.render(b),
             },
             None => container(text("No resource selected")).into(),
         }

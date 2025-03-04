@@ -15,7 +15,7 @@ fn main() -> iced::Result {
                 family: iced::font::Family::Name("Noto Sans Mono"),
                 ..Default::default()
             },
-            default_text_size: iced::Pixels(14.0),
+            default_text_size: iced::Pixels(11.0),
             antialiasing: true,
             ..iced::Settings::default()
         })

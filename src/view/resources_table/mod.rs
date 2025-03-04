@@ -4,7 +4,7 @@ use iced::{
         scrollable::{self, AbsoluteOffset},
         text,
     },
-    Element, Renderer, Task, Theme,
+    Element, Length, Renderer, Task, Theme,
 };
 use iced_table::table;
 
@@ -94,17 +94,20 @@ impl ResourcesTable {
     }
 
     pub fn view(&self) -> Element<Message> {
-        table(
-            self.header_id.clone(),
-            self.body_id.clone(),
-            &self.columns,
-            &self.rows,
-            Message::SyncResourcesTableHeader,
+        container(
+            table(
+                self.header_id.clone(),
+                self.body_id.clone(),
+                &self.columns,
+                &self.rows,
+                Message::SyncResourcesTableHeader,
+            )
+            .on_column_resize(
+                Message::ResourcesTableColumnResizing,
+                Message::ResourcesTableColumnResized,
+            ),
         )
-        .on_column_resize(
-            Message::ResourcesTableColumnResizing,
-            Message::ResourcesTableColumnResized,
-        )
+        .width(Length::Fill)
         .into()
     }
 }
